@@ -1,17 +1,15 @@
 import streamlit as st
-from st_pages import add_page_title, hide_pages
+from streamlit.elements.heading import Anchor
 
-add_page_title(layout="wide")
-
-hide_pages(["Thank you"])
 
 st.markdown("""
 Indice:
 
-* Numpy
-* Matrices
-* Operaciones con matrices
-* Vectorixación
+* [Numpy](#numpy)
+* [Matrices](#matrices)
+* [Operaciones con matrices](#operaciones-con-matrices)
+* [Producto tensorial](#producto-tensorial)
+* [Vectorización - El poder del @](#vectorizacion-el-poder-del)
 ---
 """, unsafe_allow_html=True)
 
@@ -99,7 +97,8 @@ En otras palabras, un arreglo contiene información sobre los datos en bruto, c�
 st.markdown("""
 Puedes pensar en estos arreglos multidimensionales como una especie de cajón que contiene cajones más pequeños, y así sucesivamente.
 """)
-st.image("python_course/image/NumpyArrays.png", caption="Representación visual de un arreglo NumPy", width=800)
+
+st.image("python_course/image/numpyArrays.png", caption="Representación visual de un arreglo NumPy", width=800)
 
 st.markdown("""
 Bueno, algo de lo que se suele hacer con numpy.
@@ -144,12 +143,18 @@ for i, valor in enumerate(np.linspace(0, 1, 3)):
   print(f"i: {i}: valor: {valor}")
 ```
 #Output: 
+
 #i: 0: valor: 0.0
+
 #i: 1: valor: 0.5
+
 #i: 2: valor: 1.0
+""")
 
-
-Puedo crear matrices, nultiplicarlas por un escalar, y operarmatricialmente!
+st.markdown("### Matrices")
+st.markdown(
+"""
+Puedo crear matrices, multiplicarlas por un escalar, y operar matricialmente!
 
 ```python
 # Puedo concatenar
@@ -226,6 +231,11 @@ np.array([1,2,3]) * np.array([2,2,2])
 ```
 > Nota: Las sumas en listas eran equivalente a la concatenacion, aquí eso no tendria sentido.
 
+""")
+
+st.markdown("### Operaciones con matrices")
+st.markdown(
+"""
 **Producto escalar y matricial**
 
 ``` np.dot() ```
@@ -464,7 +474,7 @@ st.code("""
     """, language="python"
     )
 
-st.markdown("[Vectorización](https://migue8gl.github.io/2026/01/06/vectorizacion-en-python.html) - El poder del [@](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html)")
+st.markdown("### [Vectorización](https://migue8gl.github.io/2026/01/06/vectorizacion-en-python.html) - el poder del [@](https://numpy.org/doc/stable/reference/generated/numpy.matmul.html)")
 st.markdown(
     """
     *Utilizamos esta sección para explicar que es necesario vectorizar cuando es posible para mejorar el rendimiento de las operaciones.*

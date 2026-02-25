@@ -1,17 +1,14 @@
 import streamlit as st
-from st_pages import add_page_title, hide_pages
-
-add_page_title(layout="wide")
-
-hide_pages(["Thank you"])
 
 st.markdown("""
-Indice:
+**Índice:**
 
-* Listas por comprensión.
-* Segmentación de cadenas.
+* [Listas por comprensión](#listas-por-comprension)
+* [Segmentación de cadenas](#segmentacion-de-cadenas).
 ---
-""", unsafe_allow_html=True)
+""")
+
+
 
 st.markdown("### Listas por comprensión")
 st.markdown("""
@@ -56,9 +53,9 @@ print(cuadrados)
 ```
 """)
 
-st.markdown("### Segmentación de cadenas (List [Slicing](https://www.datacamp.com/tutorial/python-slice))")
+st.markdown("### Segmentación de cadenas")
+st.markdown("**List [Slicing](https://www.datacamp.com/tutorial/python-slice)**")
 st.markdown("""
-
 La sintaxis de corte es la forma más común de acceder a partes de una secuencia. Cada parámetro controla cómo se realiza el segmentado: **sequence[start:stop:step]** donde *start*, *stop* y *step* son los parámetros.
 
 * **start**: Índice donde comienza la porción (inclusive). Por defecto se omite en 0.
