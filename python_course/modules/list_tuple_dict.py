@@ -4,11 +4,11 @@ import streamlit as st
 st.markdown("""
 Indice:
 
-* Python.
-* Imports.
-* Listas.
-* Tuplas.
-* Diccionarios y sets.
+* [Python](#python).
+* [Imports](#imports).
+* [Listas](#listas).
+* [Tuplas](#tuplas).
+* [Diccionarios y sets](#diccionarios-y-sets).
 ---
 """, unsafe_allow_html=True)
 
