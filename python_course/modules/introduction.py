@@ -1,18 +1,15 @@
 import streamlit as st
-from st_pages import add_page_title, hide_pages
 
-add_page_title(layout="wide")
 
-hide_pages(["Thank you"])
 
 st.markdown("""
-Indice:
+**Índice:**
 
-* General
-* Google Colab
-* Importar datos al colab
+* [General](#general)
+* [Google Colab](#google-colab)
+* [Importar datos al colab](#importar-datos-al-colab)
 ---
-""", unsafe_allow_html=True)
+""")
 
 st.markdown("### General")
 

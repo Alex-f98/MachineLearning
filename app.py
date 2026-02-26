@@ -1,30 +1,38 @@
 import streamlit as st
-from st_pages import Page, Section, show_pages, add_page_title, hide_pages
 
-add_page_title()
+#Defino pagina home
+home                        = st.Page("python_course/modules/home.py", title="Home")
 
-show_pages(
-    [   
-        Page("./app.py", "Test", "💻"),
+#Defino paginas para el repaso de python
+intro_py                    = st.Page("python_course/modules/introduction.py", title="Introducción")
+list_tuple_dict             = st.Page("python_course/modules/list_tuple_dict.py", title="Listas, tuplas y diccionarios")
+list_comprehension_slicing  = st.Page("python_course/modules/list_comprehension_slicing.py", title="Listas de comprensión y slicing")
+numpy_matrix_op             = st.Page("python_course/modules/numpy_matrix_op.py", title="Nunpy y operaciones con matrices")
 
-        # # 2024 Content
-        Section("Repaso de Python", "🐍"),
-        Page("python_course/modules/introduction.py", "Introducción", "📚", in_section=True),
-        Page("python_course/modules/list_tuple_dict.py", "Listas, Tuplas y Diccionarios", "📋", in_section=True),
-        Page("python_course/modules/list_comprehension_slicing.py", "List Comprehension y Slicing", "✂️", in_section=True),
-        Page("python_course/modules/numpy_matrix_op.py", "Numpy, Matrices y Operaciones", "🔢", in_section=True),
-        #Page("python_course/modules/variables.py", "Variables", "1️⃣", in_section=True),
-        #Page("dezoomcamp/About.py", "About", icon="🖼️", in_section=False) 
-    ]   
-)
+#Defino paginas para simulaciones
+simulaciones                = st.Page("python_course/modules/template.py", title="Simulaciones")
 
-hide_pages(["Thank you"])
 
-st.markdown("### 👨‍🔧 Test de python, por que toy al pedo [PepeCantoralPHD](https://www.youtube.com/playlist?list=PLWzLQn_hxe6bXCy0vjTGCspt2IrDUyUYm)")
+# Agrupar en secciones (nivel 1: sección, nivel 2: páginas)
+pages = {
+    "General"       : [home],
+    "Repaso Python" : [intro_py,
+                       list_tuple_dict,
+                       list_comprehension_slicing,
+                       numpy_matrix_op],
+    "Simulaciones"  : [simulaciones]
+}
 
-st.image("python_course/image/estudioso.png")
+# Barra de navegación (en sidebar o arriba)
+pg = st.navigation(pages, position="sidebar")  # o "sidebar"
+pg.run()
 
-st.markdown("---")
+
+#st.markdown("### 👨‍🔧 Test de python, por que toy al pedo [PepeCantoralPHD](https://www.youtube.com/playlist?list=PLWzLQn_hxe6bXCy0vjTGCspt2IrDUyUYm)")
+
+#st.image("python_course/image/estudioso.png")
+
+#st.markdown("---")
 
 hide_streamlit_style = """
 <style>
@@ -33,4 +41,4 @@ footer {visibility: hidden;}
 </style>
 """
 
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
