@@ -271,7 +271,7 @@ st.markdown(
 
     """)
 
-st.markdown("Polimorfismo y herencia")
+st.markdown("### Polimorfismo y herencia")
 st.markdown(
     """
     **Herencia**
