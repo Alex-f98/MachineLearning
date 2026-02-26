@@ -6,4 +6,4 @@ seaborn>=0.12.0
 plotly>=5.15.0
 requests>=2.27.1
 streamlit_book>=0.7.5
-st-pages==1.0.1
+#st-pages==1.0.1

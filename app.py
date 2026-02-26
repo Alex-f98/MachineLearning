@@ -8,6 +8,7 @@ intro_py                    = st.Page("python_course/modules/introduction.py", t
 list_tuple_dict             = st.Page("python_course/modules/list_tuple_dict.py", title="Listas, tuplas y diccionarios")
 list_comprehension_slicing  = st.Page("python_course/modules/list_comprehension_slicing.py", title="Listas de comprensión y slicing")
 numpy_matrix_op             = st.Page("python_course/modules/numpy_matrix_op.py", title="Nunpy y operaciones con matrices")
+f_classes_obj                 = st.Page("python_course/modules/classes_obj.py", title="Funciones, Clases y objetos")
 
 #Defino paginas para simulaciones
 simulaciones                = st.Page("python_course/modules/template.py", title="Simulaciones")
@@ -19,7 +20,8 @@ pages = {
     "Repaso Python" : [intro_py,
                        list_tuple_dict,
                        list_comprehension_slicing,
-                       numpy_matrix_op],
+                       numpy_matrix_op,
+                       f_classes_obj],
     "Simulaciones"  : [simulaciones]
 }
 
