@@ -1,5 +1,8 @@
 import streamlit as st
 
+# Update the layout to make better use of screen width
+st.set_page_config(layout='wide')
+
 #Defino pagina home
 home                        = st.Page("python_course/modules/home.py", title="Home")
 
@@ -11,7 +14,7 @@ numpy_matrix_op             = st.Page("python_course/modules/numpy_matrix_op.py"
 f_classes_obj                 = st.Page("python_course/modules/classes_obj.py", title="Funciones, Clases y objetos")
 
 #Defino paginas para simulaciones
-grad_desc                   = st.Page("python_course/modules/grad_desc.py", title="Gradiente descendente")
+grad_desc                   = st.Page("python_course/modules/grad_desc.py", title="Gradiente descendente- en desarrollo")
 
 
 # Agrupar en secciones (nivel 1: sección, nivel 2: páginas)
