@@ -8,7 +8,7 @@ Indice:
 * [Imports](#imports).
 * [Listas](#listas).
 * [Tuplas](#tuplas).
-* [Diccionarios y sets](#diccionarios-y-sets).
+* [Diccionarios y sets](#diccionarios).
 ---
 """, unsafe_allow_html=True)
 

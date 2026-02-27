@@ -11,7 +11,7 @@ numpy_matrix_op             = st.Page("python_course/modules/numpy_matrix_op.py"
 f_classes_obj                 = st.Page("python_course/modules/classes_obj.py", title="Funciones, Clases y objetos")
 
 #Defino paginas para simulaciones
-simulaciones                = st.Page("python_course/modules/template.py", title="Simulaciones")
+grad_desc                   = st.Page("python_course/modules/grad_desc.py", title="Gradiente descendente")
 
 
 # Agrupar en secciones (nivel 1: sección, nivel 2: páginas)
@@ -22,7 +22,7 @@ pages = {
                        list_comprehension_slicing,
                        numpy_matrix_op,
                        f_classes_obj],
-    "Simulaciones"  : [simulaciones]
+    "Simulaciones"  : [grad_desc]
 }
 
 # Barra de navegación (en sidebar o arriba)
