@@ -2,12 +2,24 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from python_course.code.utils import himmelblau, grad_himmelblau, plot_himmelblau_with_trajectory
+from python_course.code.utils import Himmelblau, Polinomio1D
 from python_course.code.numeric_solve import gradiente_descendiente
 
 
-def df(xy):
-  return grad_himmelblau(xy[0], xy[1])
+
+st.markdown("### Polinomio 1D")
+
+col1, col2, col3 = st.columns(3)
+learning_rates = [0.14, 0.0005, 0.07]
+
+for i, lr in enumerate(learning_rates):
+    with eval(f'col{i+1}'):
+        st.markdown(f'### Learning Rate: {lr}')
+        poli = Polinomio1D(max_iter=200)
+        fig = poli.plot_2d_polinomio_with_trajectory(start_w=2.4, lr=lr)
+        st.pyplot(fig)
+
+st.markdown("---")
 
 st.markdown("""
 Indice:
@@ -39,33 +51,24 @@ st.markdown("Visualización de la función de Himmelblau")
 # Malla para graficar la superficie
 x = np.arange(-6, 6, 0.1)
 y = np.arange(-6, 6, 0.1)
-X, Y = np.meshgrid(x, y)
-Z = himmelblau(X, Y)
 
-# Gráfico 3D con Plotly
-fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, showscale=False)])
-fig.update_layout(
-    scene=dict(xaxis_title='x', yaxis_title='y', zaxis_title='z'),
-    width=800, height=800
-)
+f_himmelblau = Himmelblau(x,y)
+fig = f_himmelblau.plot_3d_himmeblau()
+
 # Mostrar gráfico en Streamlit
 st.plotly_chart(fig)
 
+
+####-----------------------------------------------------------------------------------###
+#                                       Curvas de nivel
+####-----------------------------------------------------------------------------------###
 st.markdown("**Curvas de nivel**")
 
 x = np.linspace(-6, 6, 400)
 y = np.linspace(-6, 6, 400)
-X, Y = np.meshgrid(x, y)
-Z = himmelblau(X, Y)
+f_himmelblau = Himmelblau(x,y)
 
-contour_levels = np.concatenate((np.arange(0, 10), np.array([15,20,25,30]), np.arange(35, 500, 50)))
-fig, ax = plt.subplots(figsize=(8, 6))
-countour = ax.contour(X, Y, Z, levels=contour_levels, cmap='viridis')
-ax.set_title('Curvas de nivel función Himmelblau')
-ax.set_xlabel('X1')
-ax.set_ylabel('X2')
-ax.set_xlim(-6, 6)
-ax.set_ylim(-6, 6)
+fig = f_himmelblau.plot_2d_levels_himmeblau()
 st.pyplot(fig)
 
 st.markdown(
@@ -76,6 +79,9 @@ st.markdown(
     """
 )
 
+####-----------------------------------------------------------------------------------###
+#                                       Pseudocódigo y simulación
+####-----------------------------------------------------------------------------------###
 st.markdown("### Pseudocódigo y simulación")
 st.info(
     r"""
@@ -172,13 +178,17 @@ lr       = st.slider("Tasa de aprendizaje (lr)", 0.001, 0.1, 0.01, step=0.001)
 max_iter = st.number_input("Máx iteraciones", min_value=10, max_value=1000, value=100)
 x0       = st.number_input("Valor inicial x", -6.0, 6.0, 0.1)
 y0       = st.number_input("Valor inicial y", -6.0, 6.0, 0.2)
-
+ 
 # Botón para correr el algoritmo
-if st.button("Correr gradiente descendente"):
-    steps, w = gradiente_descendiente([x0, y0], df, lr, max_iter)
-    st.success(f"Óptimo hallado en {w}")
-    st.write(f"Se alcanzó en {len(steps)} pasos")
-
+if st.button("Correr gradiente descendente"):  
+    for lr in [0.14, 0.0005, 0.07]:
+        poli = Polinomio1D(max_iter=200)
+        trajectory, w_final = poli.plot_2d_polinomio_with_trajectory(start_w=2.4, lr=lr)
+        for step in trajectory:
+            fig = poli.plot_2d_polinomio_with_trajectory(start_w=step, lr=lr)
+            st.pyplot(fig)
+            st.write(f'Current weight: {step}')  
+        st.success(f'Final weight for lr={lr}: {w_final}')
 
 ###--------------------------------------------------------------------###
 ##
@@ -201,35 +211,13 @@ with col_params:
     lr_viz  = st.slider("LR", 0.001, 0.1, 0.01, step=0.001)
 
 with col_viz:
-    fig = plot_himmelblau_with_trajectory(start_x, start_y, lr_viz)
+    f_himmelblau = Himmelblau()
+    fig = f_himmelblau.plot_2d_himmelblau_with_trajectory(start_x, start_y, lr_viz)
     st.pyplot(fig)
 
 st.markdown("---")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-st.markdown("---")
-
-st.markdown("### seccion 3")
-st.markdown(
-    """
-    Contenido de la seccion
-    """
-)
 
 
 

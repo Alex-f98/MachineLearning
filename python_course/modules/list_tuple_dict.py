@@ -253,7 +253,9 @@ print(diccionario.get("clave1"))
 #Output: valor1
 ```
 
-**Sets**Un set es una estructura de datos mutable (como las listas y los diccionarios), que permite
+**Sets**
+
+Un set es una estructura de datos mutable (como las listas y los diccionarios), que permite
 agregar y quitar elementos cumpliendo los requisitos de unicidad y búsqueda en tiempo constante. Además es posible hacer operaciones entre sets como unión, intersección y diferencia
 muy fácilmente:
 
