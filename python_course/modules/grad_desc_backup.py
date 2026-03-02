@@ -6,37 +6,8 @@ from python_course.code.utils import Himmelblau, Polinomio1D
 from python_course.code.numeric_solve import gradiente_descendiente
 
 
-st.markdown("""
-* **[Gradiente Descendente](#gradiente-descendente)**
-* **[Complejizando la funcion de costo](#complejizando-la-funcion-de-costo)**
-* **[Pseudocódigo](#pseudocodigo)**
-* **[Visualización interactiva](#visualizacion-interactiva)**
 
-
-""")
-
-st.markdown("### Gradiente Descendente")
-st.markdown(
-r"""
-
-    El método del gradiente descendente es un algoritmo numérico de optimización introducido por Cauchy hace muchos años, 
-    y sin embargo sigue siendo la esencia de la mayoría de los algoritmos modernos de inteligencia artificial. 
-    
-    La idea es sencilla: igualar numéricamente a cero la derivada de una función a minimizar \(J(\theta)\). 
-    
-    Es decir, avanzar poco a poco (de forma iterativa) en la dirección del mayor decrecimiento de la función.
-
-    $$
-    \theta_{t+1} = \theta_t - \alpha \cdot \nabla J(\theta_t+1) \tag{2.11}
-    $$
-
-    donde $\alpha > 0$ recibe el nombre de *learning rate* o tasa de aprendizaje. 
-    Este tipo de parámetros, que no se deciden durante el entrenamiento, reciben el nombre de hiperparámetros, 
-    para diferenciarlos de los parámetros entrenables. 
-    Según el valor de $\alpha$, el comportamiento del algoritmo puede ser muy distinto. 
-    
- """
-)
+st.markdown("### Polinomio 1D")
 
 # Parámetros iniciales
 max_iter, w_0 = 100, 2.4
@@ -84,7 +55,6 @@ st.markdown(
 )
 
 st.markdown("---")
-st.markdown("### Complejizando la funcion de costo ")
 st.markdown(
     """
     Vimos en los gráficos anteriores como el gradiente descendente puede converger a un mínimo global o local según si es convexa o no convexa respectivamente.
@@ -153,7 +123,7 @@ st.markdown(
 ####-----------------------------------------------------------------------------------###
 #                                       Pseudocódigo y simulación
 ####-----------------------------------------------------------------------------------###
-st.markdown("### Pseudocodigo")
+st.markdown("### Pseudocódigo y simulación")
 st.info(
     r"""
     **Pseudocódigo: Gradiente Descendente**
@@ -244,6 +214,23 @@ st.markdown(
     """
 )
 
+# Parámetros ajustables
+lr       = st.slider("Tasa de aprendizaje (lr)", 0.001, 0.1, 0.01, step=0.001)
+max_iter = st.number_input("Máx iteraciones", min_value=10, max_value=1000, value=100)
+x0       = st.number_input("Valor inicial x", -6.0, 6.0, 0.1)
+y0       = st.number_input("Valor inicial y", -6.0, 6.0, 0.2)
+ 
+# Botón para correr el algoritmo
+if st.button("Correr gradiente descendente"):  
+    for lr in [0.14, 0.0005, 0.07]:
+        poli = Polinomio1D(max_iter=200)
+        trajectory, w_final, fig = poli.plot_2d_polinomio_with_trajectory(start_w=2.4, lr=lr)
+        for step in trajectory:
+            trajectory, w_final, fig = poli.plot_2d_polinomio_with_trajectory(start_w=step, lr=lr)
+            st.pyplot(fig)
+            st.write(f'Current weight: {step}')  
+        st.success(f'Final weight for lr={lr}: {w_final}')
+
 ###--------------------------------------------------------------------###
 ##
 ##                        Visualización interactiva
@@ -252,14 +239,13 @@ st.markdown(
 
 st.markdown("---")
 
-st.info(
+st.note(
     """
-    Prueba con diferentes valores de valores de inicio y learning rate para ver cómo afectan 
-    al gradiente descendente y a su convergencia.
+    Prueba con diferentes valores de valores de inicio y learning rate para ver cómo afectan al gradiente descendente y a su convergencia.
     """
 )
 
-st.markdown("### Visualizacion interactiva")
+st.markdown("### Visualización interactiva")
 st.markdown("Ajusta los parámetros para ver cómo funciona el gradiente descendente:")
 
 # Columnas desproporcionadas

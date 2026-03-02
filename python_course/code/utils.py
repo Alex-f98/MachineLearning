@@ -1,6 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import seaborn as sns
 from .numeric_solve import gradiente_descendiente
 
 
@@ -69,23 +70,33 @@ class Himmelblau:
 
 
 class Polinomio1D():
-  def __init__(self, x=np.linspace(-6, 6, 400), max_iter=100):
+  def __init__(self, x=np.linspace(-6, 6, 400), max_iter=100, convex=False):
+    self.polinomio = self.polinomio_no_convexo if not convex else self.polinomio_convexo
+    self.convex = convex
     self.x = x
     self.y = self.polinomio(x)
     self.max_iter = max_iter
+    self._cache = {}
 
-  def polinomio(self, x):
+  def polinomio_no_convexo(self, x):
     """ f(w) = w⁴ - 6w² + 3w """
     return x**4 - 6*x**2 + 3*x
+
+  def polinomio_convexo(self, x):
+    """ f(w) = w² """
+    return 2*x**2 -14
 
   def df(self, x):
     """ df(w) = 4w³ - 12w + 3 """
     return 4*x**3 - 12*x + 3
+  
+  def solve(self, start_w, lr=0.01):
+    return gradiente_descendiente(start_w, self.df, lr=lr, max_iter=self.max_iter)
 
   def plot_2d_polinomio_with_trajectory(self, start_w, lr=0.01):
     """ Genero grafico 2D de f(w) vs w con la trayectoria del gradiente descendente para un lr dado"""
 
-    trajectory, w_final = gradiente_descendiente(start_w, self.df, lr=lr, max_iter=self.max_iter) 
+    trajectory, w_final = self.solve(start_w, lr=lr) 
     # grafico
     fig, ax = plt.subplots(figsize=(8, 8)) 
     ax.plot(self.x, self.y, lw=3)
@@ -96,28 +107,41 @@ class Polinomio1D():
     ax.set_xlim(-4, 4) 
     ax.set_ylim(-15, 15) 
     ax.legend()
-    return fig
+    return trajectory, w_final, fig
 
-  def screenshot_2d_polinomio_with_trajectory(self, start_w, lr=0.01):
-    figures = []
-    trayectoria = []
-    w_actual = start_w
-  
-    for _ in range(self.max_iter):
-      _, w_final = gradiente_descendiente(w_actual, self.df, lr=lr, max_iter=self.max_iter) 
-      w_actual = w_final
-      trayectoria.append(w_actual)
-      # grafico
-      fig, ax = plt.subplots(figsize=(8, 8)) 
-      ax.plot(self.x, self.y, lw=3)
-      ax.plot(trayectoria, self.polinomio(np.array(trayectoria)), 'ro-', label=f'w_final = {w_actual:.2f}')
-      ax.set_title(f'Gradiente Descendente con Learning Rate = {lr}') 
-      ax.set_xlabel('X1') 
-      ax.set_ylabel('X2') 
-      ax.set_xlim(-4, 4) 
-      ax.set_ylim(-15, 15) 
-      ax.legend()
-      figures.append(fig)
-    return figures
+  def _solve_polynomial(self, w_0, lr):
+    """Cache de la solucion, emula el @st.cache_data pero internamente"""
+    # Crear clave única para el cache: (tuple_w_0, lr)
+    cache_key = (tuple(w_0) if isinstance(w_0, (list, np.ndarray)) else (w_0,), lr)
+    
+    if cache_key not in self._cache:
+        self._cache[cache_key] = self.solve(w_0, lr)
+    
+    return self._cache[cache_key]
+
+  def dinamic_plot_2d_polinomio_with_trajectory(self, start_w, it, lr=0.01):
+    trayectory_w, _ = self._solve_polynomial(start_w, lr)
+    sns.set_theme(style="white", context="talk")  # context: paper, notebook, talk, poster
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.plot(self.x, self.y, lw=7, color=sns.color_palette("dark")[0], label="Polinomio")
+
+    # Trayectoria del gradiente
+    ax.plot(
+        trayectory_w[:it],
+        self.polinomio(trayectory_w[:it]),
+        's-',
+        lw=7,
+        color=sns.color_palette("dark")[1],
+        label=f'w_final = {trayectory_w[:it][-1]:.3f}\nsteps = {it}\nmax_steps = {self.max_iter}'
+    )
+    ax.set_xlabel(rf'$\theta$', fontsize=14)
+    ax.set_ylabel(rf'$J(\theta)$', fontsize=14)
+    ax.set_xlim(-4, 4)
+    ax.set_ylim(-15, 15)
+    ax.legend(fontsize=17, loc='best', frameon=True, fancybox=True, shadow=True)
+    ax.tick_params(axis='both', which='major', labelsize=12)
+
+    return fig
 
     
