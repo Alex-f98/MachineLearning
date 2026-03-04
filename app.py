@@ -15,7 +15,7 @@ f_classes_obj                 = st.Page("python_course/modules/classes_obj.py", 
 
 #Defino paginas para simulaciones
 grad_desc                   = st.Page("python_course/modules/grad_desc.py", title="Gradiente descendente- en desarrollo")
-
+regularization_reg          = st.Page("python_course/modules/regularization_reg.py", title="Regularización Ridge")
 
 # Agrupar en secciones (nivel 1: sección, nivel 2: páginas)
 pages = {
@@ -25,7 +25,7 @@ pages = {
                        list_comprehension_slicing,
                        numpy_matrix_op,
                        f_classes_obj],
-    "Simulaciones"  : [grad_desc]
+    "Simulaciones"  : [grad_desc, regularization_reg]
 }
 
 # Barra de navegación (en sidebar o arriba)
