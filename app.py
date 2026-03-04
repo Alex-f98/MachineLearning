@@ -28,8 +28,8 @@ pages = {
                        list_comprehension_slicing,
                        numpy_matrix_op,
                        f_classes_obj],
-    "Simulaciones"  : [grad_desc, regularization_reg],
-    "Conformal Predictión" : [cp_intro]
+    "Simulaciones"  : [grad_desc, regularization_reg]#
+   #"Conformal Predictión" : [cp_intro]
 }
 
 # Barra de navegación (en sidebar o arriba)
