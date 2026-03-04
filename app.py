@@ -17,6 +17,9 @@ f_classes_obj                 = st.Page("python_course/modules/classes_obj.py", 
 grad_desc                   = st.Page("python_course/modules/grad_desc.py", title="Gradiente descendente- en desarrollo")
 regularization_reg          = st.Page("python_course/modules/regularization_reg.py", title="Regularización Ridge")
 
+#Conformal prediction.
+cp_intro                    = st.Page("python_course/modules/cp/intro_co.py", title="Introducción")
+
 # Agrupar en secciones (nivel 1: sección, nivel 2: páginas)
 pages = {
     "General"       : [home],
@@ -25,7 +28,8 @@ pages = {
                        list_comprehension_slicing,
                        numpy_matrix_op,
                        f_classes_obj],
-    "Simulaciones"  : [grad_desc, regularization_reg]
+    "Simulaciones"  : [grad_desc, regularization_reg],
+    "Conformal Predictión" : [cp_intro]
 }
 
 # Barra de navegación (en sidebar o arriba)
