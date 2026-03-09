@@ -22,7 +22,7 @@ r"""
     El método del gradiente descendente es un algoritmo numérico de optimización introducido por Cauchy hace muchos años, 
     y sin embargo sigue siendo la esencia de la mayoría de los algoritmos modernos de inteligencia artificial. 
     
-    La idea es sencilla: igualar numéricamente a cero la derivada de una función a minimizar \(J(\theta)\). 
+    La idea es sencilla: igualar numéricamente a cero la derivada de una función a minimizar $J(\theta)$. 
     
     Es decir, avanzar poco a poco (de forma iterativa) en la dirección del mayor decrecimiento de la función.
 
@@ -31,8 +31,10 @@ r"""
     $$
 
     donde $\alpha > 0$ recibe el nombre de *learning rate* o tasa de aprendizaje. 
+
     Este tipo de parámetros, que no se deciden durante el entrenamiento, reciben el nombre de hiperparámetros, 
     para diferenciarlos de los parámetros entrenables. 
+
     Según el valor de $\alpha$, el comportamiento del algoritmo puede ser muy distinto. 
     
  """
@@ -70,6 +72,7 @@ with tab_no_convexo:
 st.markdown(
     r"""
     Se puede observar un ejemplo convergente del algoritmo. 
+
     Paso a paso el algoritmo se va acercando al mínimo, aunque corre el riesgo de necesitar muchas iteraciones para alcanzar la convergencia. 
     
     Sin embargo un learning rate muy grande, lejos de acelerar, puede generar comportamientos
@@ -275,6 +278,14 @@ with col_viz:
     f_himmelblau = Himmelblau()
     fig = f_himmelblau.plot_2d_himmelblau_with_trajectory(start_x, start_y, lr_viz)
     st.pyplot(fig)
+
+
+st.info("""
+    Puedes ver como el **mínimo alcanzado depende fuertemente del punto de inicio y del learning rate**.
+    
+    Existen varias tecnicas actuales para mejorar el gradiente descendente, algunas mejores que otras 
+    dependiendo del problema que se esté resolviendo.
+""")
 
 st.markdown("---")
 

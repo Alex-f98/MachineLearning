@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.markdown("""
-Indice:
+Índice:
 
 * [Funciones](#funciones)
 * [Objetos](#objetos)
@@ -13,7 +13,9 @@ st.markdown("### Funciones")
 st.markdown(
     """
     Una función en Python es un bloque de código identificado por un nombre, que encapsula una tarea específica y puede ser reutilizado.
+
     Se define con la palabra clave def, seguida del nombre de la función, una lista de parámetros entre paréntesis y un cuerpo de instrucciones.
+
     Opcionalmente, puede devolver un resultado mediante la instrucción return.
      
     ```python
@@ -56,13 +58,14 @@ st.markdown(
 st.markdown("### Objetos")
 st.markdown(
     """
-    *Los objetos son una manera de organizar datos y de relacionar esos datos con el código apropiado para manejarlo. 
-    Son los protagonistas de un paradigma de programación llamado Programación Orientada a Objetos.*
+    *Los objetos son una manera de organizar datos y de relacionar esos datos con el código apropiado para manejarlo.* 
+
+    *Son los protagonistas de un paradigma de programación llamado Programación Orientada a Objetos.*
     
     *Nosotros ya usamos objetos en Python sin mencionarlo explícitamente. Es más, todos los
     tipos de datos que Python nos provee son, en realidad, objetos*
 
-    **Pero bien, mas formalmente que son los objetos?**
+    **Pero bien, más formalmente ¿qué son los objetos?**
 
     En Python, todos los tipos son objetos. Pero no en todos los lenguajes de programación es
     así. En general, podemos decir que un objeto es una forma ordenada de agrupar datos (los
@@ -81,17 +84,17 @@ st.markdown(
     de una instancia determinan el estado actual de esa instancia, y los métodos definidos en una clase
     determinan cómo se va a comportar ese objeto.
 
-    Ok, pero veamos un ejemplos practicos para cerrar conceptos:
+    Ok, pero veamos unos ejemplos prácticos para cerrar conceptos:
 
-    ej 1: ya usabamos objetos y no sabiamos.
+    Ejemplo 1: ya usábamos objetos y no sabíamos.
     ```python
     lista = [1,2,3,4,"f"]
     print(type(lista))
-    #Output: <class 'list'>  #en nuevas versiones de python solo aparece "list".
+    #Output: <class 'list'>  #en nuevas versiones de Python solo aparece "list".
     ```
     Es justamente una instancia de la clase "list", el objeto es la variable lista.
 
-    ej 2: Podemos ver que metodos y atributos tienen.
+    Ejemplo 2: Podemos ver qué métodos y atributos tienen.
     ```python
     lista = [1,2,3,4,"f"]
     print(dir(lista))
@@ -111,25 +114,25 @@ st.markdown(
     #         'reverse', 
     #         'sort']
     ```
-    Nos dá el listado de atributo y metodos todos mesclados, los ultimos son metodos de la clase "list".
-    Aquellos atributos que empiezan y terminan con "__" son atributos especiables que python usa internamente para definir el comportamiento interno.
+    Nos da el listado de atributos y métodos todos mezclados, los últimos son métodos de la clase "list".
+    Aquellos atributos que empiezan y terminan con "__" son atributos especiales que Python usa internamente para definir el comportamiento interno.
 
-    ej 3: Un atributo es un valor que tiene un objeto.
+    Ejemplo 3: Un atributo es un valor que tiene un objeto.
     ```python
     lista = [1,2,3,4,"f"]
     print(lista.__len__())
     #Output: 5
     ```
-    > Nota: __len__ es un metodo que devulve la cantidad de elementos que tiene la lista y de hecho es el metodo que se llama cuando usamos la funcion len()
+    > Nota: `__len__` es un método que devuelve la cantidad de elementos que tiene la lista y de hecho es el método que se llama cuando usamos la función `len()`
     
-    ej 4: Un metodo es una operacion que puede realizar un objeto.
+    Ejemplo 4: Un método es una operación que puede realizar un objeto.
     ```python
     lista = [1,2,3,4,"f"]
     lista.append(5)           #agrega el elemento 5 a la lista
     print(lista)
     #Output: [1, 2, 3, 4, 'f', 5]
     ```
-    Bien, ahora que vimos que los objetos tienen estado y comportamiento, veamos como se definen.
+    Bien, ahora que vimos que los objetos tienen estado y comportamiento, veamos cómo se definen.
 
     ```python
     class MiClase:
@@ -137,11 +140,11 @@ st.markdown(
             self._atributo = atributo
     ```
     La sintaxis "self._atributo = atributo" es la forma de definir un atributo en una clase.
-    Simplemente, "self" es una convencion que indica que el atributo pertenece a la instancia de la clase y puedo asignarle un valor que luego podre usar en los metodos de la clase.
+    Simplemente, "self" es una convención que indica que el atributo pertenece a la instancia de la clase y puedo asignarle un valor que luego podré usar en los métodos de la clase.
     
-    Aquí la funcion def __init__ es el constructor de la clase, es decir, es la funcion que se llama cuando se crea una instancia de la clase.
+    Aquí la función def __init__ es el constructor de la clase, es decir, es la función que se llama cuando se crea una instancia de la clase.
 
-    Sigamos completandolo un poco mas.
+    Sigamos completándolo un poco más.
     ```python
     class MiClase:
         def __init__(self, atributo):
@@ -151,21 +154,21 @@ st.markdown(
             return self._atributo
     ```
 
-    Vemos que ahora existen dos funciones dentro de mi clase def __init__ que es el constructor de la clase y *get_atributo* que es un metodo de la clase.
-    este metodo debe ser llamado para obtener el valor del atributo (no se llama automaticamente).
-    ej 5:
+    Vemos que ahora existen dos funciones dentro de mi clase def `__init__` que es el constructor de la clase y *get_atributo* que es un método de la clase.
+    este método debe ser llamado para obtener el valor del atributo (no se llama automáticamente).
+    Ejemplo 5:
     ```python
     mi_clase = MiClase("Soy un atributo_777 :v")
     print(mi_clase.get_atributo())
     #Output: Soy un atributo_777 :v
     ```
 
-    Bien, pero el metodo "append()" recibia un parametro, entonces tambien se puede usar en la definicion de un metodo.
+    Bien, pero el método "append()" recibía un parámetro, entonces también se puede usar en la definición de un método.
     ```python
     def nombre_metodo(self, parametro1, parametro2, ...):
         # codigo del metodo
     ```
-    ej 6:
+    Ejemplo 6:
     ```python
     class MiClase:
         def __init__(self, atributo):
@@ -176,12 +179,12 @@ st.markdown(
 
     mi_clase = MiClase("Soy un atributo")
     print(mi_clase.get_atributo(" y yo un parametro :v"))
-    #Output: Soy un atributo y yo un parametro :v
+    #Output: Soy un atributo y yo un parámetro :v
     ```
 
-    Listo, ahora que vimos como se definen las clases y los objetos hagamos algo un poquito mas serio.
+    Listo, ahora que vimos cómo se definen las clases y los objetos hagamos algo un poquito más serio.
 
-    ej 7: Creemos un Therian.
+    Ejemplo 7: Creemos un Therian.
     ```python
     class Therian():
         def __init__(self,
@@ -192,14 +195,14 @@ st.markdown(
             self.especie        = especie
             self.edad           = edad
             self.estado         = "humano"
-            self.habilidades    = []          #creo una lista vacia para guardar las habilidades del therian.
+            self.habilidades    = []          #creo una lista vacía para guardar las habilidades del therian.
             self.nivel_energia  = 100     
         
         def transformar(self):
             if self.estado == "humano":
                 self.estado = "animal"
             else:
-                estado = "humano"
+                self.estado = "humano"
             print(f"- {self.nombre} se ha transformado en {self.estado}.")
 
         def agregar_habilidad(self, habilidad):
@@ -215,13 +218,13 @@ st.markdown(
                 print(f"- {self.nombre} no puede usar '{habilidad}'.")
 
         def descansar(self):
-            ''' Descansar recuepra el 100% de la energia'''
+            ''' Descansar recupera el 100% de la energía'''
             self.nivel_energia = 100
             print(f"- {self.nombre} ha descansado y recuperado toda su energía.")
 
         def presentarse(self):
             print(f'''- Soy {self.nombre}, un therian de especie {self.especie}, edad {self.edad}, estado actual: {self.estado}.
-            Suelo habitar el barrio chino y si me ves corre!.''')
+            Suelo habitar el barrio chino y si me ves, ¡corre!''')
 
 
     luna = Therian("Luna", "lobo", 21)
@@ -240,8 +243,10 @@ st.markdown(
     #- Luna ha descansado y recuperado toda su energía.
     ```
 
+    > Nota: Hace falta que lo explique? miralo con calma y entiende cada parte, es mas facil de lo que parece.
 
-    **[Metodos especiales](https://allendowney.github.io/ThinkPython/chap16.html)**
+
+    **[Métodos especiales](https://allendowney.github.io/ThinkPython/chap16.html)**
 
     Son funciones definidas dentro de una clase que comienzan y terminan con `__`.  
     Python los usa para dar comportamiento especial a los objetos, como inicialización, representación en texto, comparación, operaciones matemáticas, etc.  
@@ -317,8 +322,8 @@ st.markdown(
     #   Leo ha descansado y recuperado toda su energía.
     ```
     
-    Bien, osea en este ejemplo usamos la clase therian que habiamos definido antes como clase base o superclase.
-    La notacion es la siguiente:
+    Bien, o sea en este ejemplo usamos la clase therian que habíamos definido antes como clase base o superclase.
+    La notación es la siguiente:
     ```python
     class NuevaClase(ClaseBase):
         ...
@@ -331,9 +336,9 @@ st.markdown(
     class Felino(Therian):
         ...
     ```
-    esto significa que no se necesita repetir codigo que ya esta en la clase base.
-    Es decir metodos como *descansar* o *usar_habilidad* ya estan definidos en la clase base "Therian".
-    Pero vemos que solo sobreescribimos el metodo *presentarse* esto es porque cada subclase puede tener su propia forma de presentarse, asi  usamos el polimorfismo.
+    esto significa que no se necesita repetir código que ya está en la clase base.
+    Es decir métodos como *descansar* o *usar_habilidad* ya están definidos en la clase base "Therian".
+    Pero vemos que solo sobreescribimos el método *presentarse* esto es porque cada subclase puede tener su propia forma de presentarse, así usamos el polimorfismo.
     
     
     

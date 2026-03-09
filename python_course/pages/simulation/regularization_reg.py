@@ -14,7 +14,12 @@ st.markdown("""
     
     Vamos a ver un ejemplo de Ridge:
 """)
-
+#https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression
+st.latex(r"""
+\min_{w} \underbrace{|\overbrace{Xw}^{\hat{y}} - y|_2^2}_{\text{Error de ajuste}} 
+ + 
+\underbrace{\alpha |w|_2^2}_{\substack{\text{Termino de}\\\text{regularización}}}
+""")
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
@@ -69,15 +74,22 @@ st.markdown("""
 - $\lambda$: parámetro de regularización (controla el peso de la regularización)
 - $||w||_q$: norma $L_q$ del vector de parámetros $w$
 
- La intuición matemática es clara, se intenta minimizar $J(w)* = J(w) + \lambda ||w||_q$ osea que
- se tienen que minimizar ambos terminos, por lo que minimzando solo el primer termino puede llevar a valores de
+ La intuición matemática es clara, se intenta minimizar $J(w)^* = J(w) + \lambda ||w||_q$ osea que
+ se tienen que minimizar ambos términos, por lo que minimizando solo el primer término puede llevar a valores de
  $w$ muy grandes que pueden causar overfitting (recordar: $\hat{y} = w_1 x_1 + w_2 x_2 + ... + w_n x_n$), para evitar esto es que 
- se minimiza el segundo termino que tendera a minimizar los valores de $w$  manteniniendo así un trade-off entre ambos terminos.
+ se minimiza el segundo término que tenderá a minimizar los valores de $w$  manteniniendo así un trade-off entre ambos términos.
 """)
-st.markdown("Donde: se presenta una función de costo convexa para la visualización")
+st.markdown("Se presenta una función de costo convexa para la visualización")
 st.latex(r"""
 J(w) = (w - w_0)^T A (w - w_0)
 """)
+
+st.markdown("""
+Bien, pero tambien hay una interpretación geometrica para entender esto.\\
+En lugar de minimizar $\min_w J(w) + \lambda ||w||_q$, se puede pensar en minimizar $J(w)$ sujeto a una restricción de la norma de $w$.
+Es decir, minimizar el error dentro de una regiión permitida del espacio de parametros.
+""")
+
 
 # sliders
 lambda_reg = st.slider("λ regularización", 0.1, 5.0, 1.0)
@@ -146,3 +158,4 @@ ax2.set_title("L2 (Ridge)")
 plt.tight_layout()
 st.pyplot(fig)
 
+st.info("Referencia: [Bishop - 9.2.2 Generalized weight decay](https://www.bishopbook.com/)")
