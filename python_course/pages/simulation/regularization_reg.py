@@ -86,8 +86,8 @@ J(w) = (w - w_0)^T A (w - w_0)
 
 st.markdown("""
 Bien, pero tambien hay una interpretación geometrica para entender esto.\\
-En lugar de minimizar $\min_w J(w) + \lambda ||w||_q$, se puede pensar en minimizar $J(w)$ sujeto a una restricción de la norma de $w$.
-Es decir, minimizar el error dentro de una regiión permitida del espacio de parametros.
+En lugar de minimizar $\min_w J(w) + \lambda ||w||_q$, se puede pensar en minimizar $J(w)$ sujeto a una restricción de la norma de $w$.\\
+Es decir, minimizar el error dentro de una región permitida del espacio de parametros.
 """)
 
 
