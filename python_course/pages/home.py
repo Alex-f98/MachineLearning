@@ -31,7 +31,9 @@ st.markdown("---")
 st.markdown(
     """
     Links de interes.
+
     [PepeCantoralPHD](https://www.youtube.com/playlist?list=PLWzLQn_hxe6bXCy0vjTGCspt2IrDUyUYm)
+    [IBM Think](https://www.ibm.com/think/topics)
     """)
 
 st.markdown("---")
