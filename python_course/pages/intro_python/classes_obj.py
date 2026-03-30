@@ -334,12 +334,174 @@ st.markdown(
         ...
     ```
     esto significa que no se necesita repetir código que ya está en la clase base.
+
     Es decir métodos como *descansar* o *usar_habilidad* ya están definidos en la clase base "Therian".
+
     Pero vemos que solo sobreescribimos el método *presentarse* esto es porque cada subclase puede tener su propia forma de presentarse, así usamos el polimorfismo.
     
     
     
     """
+)
+
+st.markdown("### Ejemplo: Normalizacion (Scaler)")
+st.markdown(
+    """
+
+    Bien, ahora veamos un ejemplo más real de herencia y polimorfismo.
+
+
+    En Machine Learning, muchas técnicas requieren que las variables numéricas estén en una escala comparable. 
+
+    Para esto, se utilizan scalers, que transforman los datos mediante estadísticas calculadas sobre el conjunto de entrenamiento (media, desviación estándar, mínimo, máximo, etc.).
+
+    Implementar en Python una clase que realice escalado de datos numéricos, 
+    inspirada en los scalers de sklearn.preprocessing, sin utilizar directamente dichas clases.
+
+    Las clases deben:
+
+    - Heredad de una clase Scaler base
+    - Las clases hijas deben implementar los métodos *fit* y *transform*
+    - Ajustarse a un conjunto de datos calculando los parámetros necesarios (fit)
+    - Transformar datos usando esos parámetros (transform)
+    - Ofrecer un método combinado (fit_transform)
+    - El comportamiento debe ser equivalente, a nivel funcional, a StandardScaler y MinMaxScaler de sklearn.
+
+    > Mas detalle lo puedes encontrar en la [documentación de sklearn](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html).
+
+
+
+    ```python
+    class Scaler:
+        def fit(self, X): #se puede poner un tipo de dato específico (self, X: pd.DataFrame|np.ndarray)
+            '''
+            Ajusta el scaler a los datos X.
+            
+            Args:
+                X: DataFrame o array-like con los datos a escalar
+            '''
+            pass
+        
+        def transform(self, X):
+            '''
+            Transforma los datos X usando los parámetros ajustados.
+            
+            Args:
+                X: DataFrame o array-like con los datos a transformar
+                
+            Returns:
+                DataFrame o array-like con los datos transformados
+            '''
+            pass
+        
+        def fit_transform(self, X):
+            self.fit(X)
+            return self.transform(X)
+
+        def inverse_transform(self, X):
+            pass
+
+
+
+    class MinMaxScaler(Scaler):
+        def fit(self, X):
+            self.min = X.min()
+            self.max = X.max()
+        
+        def transform(self, X):
+            return (X - self.min) / (self.max - self.min) #se podria validar la division por cero
+        
+        def inverse_transform(self, X):
+            return X * (self.max - self.min) + self.min
+
+    class StandardScaler(Scaler):
+        def fit(self, X):
+            self.mean = X.mean()
+            self.std  = X.std()
+        
+        def transform(self, X):
+            return (X - self.mean) / self.std
+
+        def inverse_transform(self, X):
+            return X * self.std + self.mean
+    ```
+
+
+    Bien, esto hay que explicarlo por que puede marear.
+
+    primero, la funcion matematica de standard scaler es:
+
+    $$
+    z = \\frac{x - \mu}{\sigma}
+    $$
+
+    donde $\mu$ es la media y $\sigma$ es la desviacion estandar.
+
+    y la funcion matematica de minmax scaler es:
+
+    $$
+    x' = \\frac{x - \min(x)}{\max(x) - \min(x)}
+    $$
+
+    donde $\min(x)$ es el valor minimo y $\max(x)$ es el valor maximo.
+
+    estas funciones estan implementadas en sus respectivas funciones transform, que veremos mas en detalle.
+
+    primero tenemos la clase padre **Scaler**, que es la que define los metodos que deben implementar 
+    las clases hijas.
+    
+    Estas son:
+    - `fit(self, X)`: Ajusta el scaler a los datos X.
+    - `transform(self, X)`: Transforma los datos X usando los parámetros ajustados.
+    - `fit_transform(self, X)`: Ajusta y transforma los datos X.
+    - `inverse_transform(self, X)`: Invierte la transformación.
+
+    Puedes notar que no es necesario una implementación concreta para los metodos de la clase padre,
+    ya que las clases hijas van a implementarlos de manera diferente.
+
+    Aunque, en el metodo **fit_transform**, podemos ver que no es necesario implementarlo en las clases hijas,
+    ya que la clase padre lo implementa de manera general y puede ser llamado directamente.
+
+    En **StandardScaler**, 
+    - El metodo **fit** define dos nuevos atributos: **mean** y **std**, que son la media y la desviacion estandar de los datos
+    las cuales no estaban definido en la clase padre, pero pueden ser accedidos desde los metodos **transform** y **inverse_transform** luego de que **fit** sea llamado.
+
+    - El metodo **transform** aplica la funcion matematica de standard scaler a los datos X, estos pueden ser otros datos diferentes a los que se usaron en **fit**.
+    - El metodo **inverse_transform** aplica la funcion matematica de inverse standard scaler a los datos X, estos pueden ser otros datos diferentes a los que se usaron en **fit**.
+
+    En **MinMaxScaler**, 
+    - El metodo **fit** define dos nuevos atributos: **min** y **max**, que son el valor minimo y el valor maximo de los datos
+    las cuales no estaban definido en la clase padre, pero pueden ser accedidos desde los metodos **transform** y **inverse_transform** luego de que **fit** sea llamado.
+
+    - El metodo **transform** aplica la funcion matematica de minmax scaler a los datos X, estos pueden ser otros datos diferentes a los que se usaron en **fit**.
+    - El metodo **inverse_transform** aplica la funcion matematica de inverse minmax scaler a los datos X, estos pueden ser otros datos diferentes a los que se usaron en **fit**.
+
+    > Se le pueden agregar distintas validaciones e incluso heredar de mas padres, para el ejemplo esto es suficiente.
+
+
+    Puedes probarlo de la siguiente manera:
+
+    ```python
+    scaler_1 = StandardScaler()
+    scaler_2 = MinMaxScaler()
+
+    X_train_scaled_1 = scaler_1.fit_transform(X)
+    X_train_scaled_2 = scaler_2.fit_transform(X)
+    ```
+
+    Bien, aqui scaler_1 y scaler_2 son dos objetos diferentes, cada uno con su propia instancia de la clase StandardScaler y MinMaxScaler.
+    Cada uno de ellos tiene sus propios atributos y metodos, y pueden ser usados de manera independiente.
+
+    llamo directamente a sus respectivos **fit_transform** para aplicar entrenar los parametros y luego aplica la transformación.
+    este metodo no fue implementado en las clases hijas pero hereda el metodo de la clase padre que usa las implementaciones de **fit** y **transform**.
+    
+    > Es como si estuvieramos sobrescrbiendo los metodos fit y transform en las clases hijas.
+
+    Puedes probar el codigo y ver su funcionamiento al final del siguiente [notebook](https://github.com/Alex-f98/MachineLearning/blob/main/notebooks/normalization_experiments.ipynb)
+
+    
+
+"""
 )
 
 
