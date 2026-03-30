@@ -18,10 +18,11 @@ f_classes_obj               = st.Page(f"{path_python}/classes_obj.py", title="Fu
 path_simulation = "python_course/pages/simulation"
 grad_desc                   = st.Page(f"{path_simulation}/grad_desc.py", title="Gradiente descendente- en desarrollo")
 regularization_reg          = st.Page(f"{path_simulation}/regularization_reg.py", title="Regularización Ridge")
-ml_viz                      = st.Page("python_course/pages/simulation/ml_viz.py", title="Visualización de ML")
+ml_viz                      = st.Page(f"{path_simulation}/ml_viz.py", title="Visualización de ML")
+Normalizacion               = st.Page(f"{path_simulation}/normalizacion.py", title="Normalización")
 
 #Conformal prediction.
-cp_intro                    = st.Page("python_course/pages/cp/intro_cp.py", title="Introducción")
+#cp_intro                    = st.Page("python_course/pages/cp/intro_cp.py", title="Introducción")
 
 # Agrupar en secciones (nivel 1: sección, nivel 2: páginas)
 pages = {
@@ -31,9 +32,13 @@ pages = {
                        list_comprehension_slicing,
                        numpy_matrix_op,
                        f_classes_obj],
-    "Simulaciones"  : [grad_desc, regularization_reg, ml_viz]#,
+    "Simulaciones"  : [grad_desc, 
+                       regularization_reg, 
+                       ml_viz,
+                       Normalizacion]#,
     #"Conformal Predictión" : [cp_intro]
 }
+
 
 # Barra de navegación (en sidebar o arriba)
 pg = st.navigation(pages, position="sidebar")  # o "sidebar"

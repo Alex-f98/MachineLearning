@@ -13,9 +13,7 @@ st.markdown("### Funciones")
 st.markdown(
     """
     Una función en Python es un bloque de código identificado por un nombre, que encapsula una tarea específica y puede ser reutilizado.
-
     Se define con la palabra clave def, seguida del nombre de la función, una lista de parámetros entre paréntesis y un cuerpo de instrucciones.
-
     Opcionalmente, puede devolver un resultado mediante la instrucción return.
      
     ```python
@@ -58,9 +56,8 @@ st.markdown(
 st.markdown("### Objetos")
 st.markdown(
     """
-    *Los objetos son una manera de organizar datos y de relacionar esos datos con el código apropiado para manejarlo.* 
-
-    *Son los protagonistas de un paradigma de programación llamado Programación Orientada a Objetos.*
+    *Los objetos son una manera de organizar datos y de relacionar esos datos con el código apropiado para manejarlo. 
+    Son los protagonistas de un paradigma de programación llamado Programación Orientada a Objetos.*
     
     *Nosotros ya usamos objetos en Python sin mencionarlo explícitamente. Es más, todos los
     tipos de datos que Python nos provee son, en realidad, objetos*
@@ -123,7 +120,7 @@ st.markdown(
     print(lista.__len__())
     #Output: 5
     ```
-    > Nota: `__len__` es un método que devuelve la cantidad de elementos que tiene la lista y de hecho es el método que se llama cuando usamos la función `len()`
+    > Nota: ```python__len__``` es un método que devuelve la cantidad de elementos que tiene la lista y de hecho es el método que se llama cuando usamos la función len()
     
     Ejemplo 4: Un método es una operación que puede realizar un objeto.
     ```python
@@ -154,7 +151,7 @@ st.markdown(
             return self._atributo
     ```
 
-    Vemos que ahora existen dos funciones dentro de mi clase def `__init__` que es el constructor de la clase y *get_atributo* que es un método de la clase.
+    Vemos que ahora existen dos funciones dentro de mi clase def __init__ que es el constructor de la clase y *get_atributo* que es un método de la clase.
     este método debe ser llamado para obtener el valor del atributo (no se llama automáticamente).
     Ejemplo 5:
     ```python

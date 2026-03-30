@@ -8,3 +8,5 @@ requests>=2.27.1
 streamlit_book>=0.7.5
 #st-pages==1.0.1
 scikit-learn>=1.3.2
+cp_models @ git+https://github.com/Alex-f98/cp_models.git
+#nbformat>=4.2.0

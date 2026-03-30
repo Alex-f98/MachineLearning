@@ -1,4 +1,6 @@
 import streamlit as st
+from python_course.code.cp_examples import run
+import numpy as np
 
 st.markdown("""
 Indice:
@@ -27,6 +29,12 @@ st.image(
     caption="Flujo de la predicción conforme, a izquierda se muestra el caso de clasificación y a la derecha el caso de regresión",
     use_container_width=True
 )
+st.info(
+    """
+    Osea que el marco de predicción conforme nos devulve conjuntos (a izquirda de la figura) o intervalos (a derecha) de **predicción
+    con garantias estadisticas rigurosas** sobre cualquier modelo de aprendizaje automático.
+    """
+)
 
 st.markdown(
     r"""
@@ -34,18 +42,13 @@ st.markdown(
     - Debemos partir de un modelo ya entrenado (o entrenarlo con su respectivo set de entrenamiento)
     - A partir del modelo se deben obtener predicciones ($\hat{y}_i$) y un score ($s_i \in \mathbb{R}$) por cada muestra de predicha.
     - Dicho par $(\hat{y}_i, s_i)$ se le conoce como el conjunto de calibracion (se obtuvo con un set de calibración $X_{test}$)
-    - Se debe elejir un valor de confianza $\alpha$ (por ejemplo, 0.1 para 90% de confianza)
-    - Luego se pasa por el algortimo de conformal prediction para generar los intervalos de predicción.
+    - Se debe elejir un valor de significancia $\alpha$ (por ejemplo, 0.1 para 90% de confianza)
+    - Luego se pasa por el algortimo de conformal prediction para generar los intervalos(o conjuntos) de predicción.
     - Estos intervalos de predicción deben cumplir para un nuevo punto $X_{test}$ con $\mathbf{P}(y_{test} \in \mathcal{C}(X_{t    est})) \geq 1 - \alpha$
     
     """
 )
-st.info(
-    """
-    Osea que el marco de predicción conforme nos devulve conjuntos (a izquirda de la figura) o intervalos (a derecha) de **predicción
-    con garantias estadisticas rigurosas** sobre cualquier modelo de aprendizaje automático.
-    """
-)
+
 st.markdown("EL flujo es el siguiente:")
 st.info(
     r"""
@@ -199,5 +202,117 @@ st.markdown(
 
         - El problema es que esos conjuntos serán muy grandes e inútiles (no informan nada útil, aunque estadísticamente sean correctos).
         
+    """
+)
+
+
+
+
+#results, figures = run(model_type="mlp", alpha=0.05)
+#
+#if results:
+#    st.success("Modelo entrenado exitosamente")
+#    st.json(results)
+#    
+#    if fig := figures.get_figure("predictions"):
+#        st.pyplot(fig)
+
+
+
+
+noise_level = st.slider(
+    "Nivel de Dificultad (Ruido)",
+    min_value=0.0,
+    max_value=1.0,
+    value=0.0,
+    step=0.1,
+    format="%.1f"
+)
+
+# Checkbox para modo caché
+use_cache = st.checkbox(
+    "🔒 Usar datos de referencia (cache)",
+    help="Activa para usar siempre las mismas imágenes y poder comparar efectos de α y ruido consistentemente"
+)
+
+# Botón para limpiar caché (solo si está activo)
+if use_cache:
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("🗑️ Limpiar Caché", help="Reinicia los índices cacheados"):
+            from python_course.code.cp_examples import cache_manager
+            cache_manager.clear_cache()
+            st.success("✅ Caché limpiado - Se seleccionarán nuevas imágenes")
+            st.rerun()
+
+# Mostrar información del caché si está activo
+if use_cache:
+    from python_course.code.cp_examples import cache_manager
+    if cache_manager.is_cached:
+        st.info(f"🔒 **Modo Cache Activado** - Índices guardados: {cache_manager.get_visualization_indices()}")
+    else:
+        st.info("🔒 **Modo Cache Activado** - Se guardarán los índices de la primera visualización")
+else:
+    st.info("🔄 **Modo Dinámico** - Se generarán nuevos datos aleatorios en cada ejecución")
+
+st.markdown("""
+## 📊 Ajusta el nivel de confianza (α)
+##  $1 - \hat{f}(X_i)_{Y_i} = S \leq q$ entonces $\hat{f}(X_i)_{Y_i} \geq 1-q$
+""")
+
+# Valores logarítmicos entre 0 y 1
+alpha_options = np.logspace(-3, -0.01, 40)  # De 0.001 a ~0.977 (evitar valores > 1)
+alpha = st.select_slider(
+    "Nivel de Significancia (α)",
+    options=alpha_options,
+    value=alpha_options[np.argmin(np.abs(alpha_options - 0.1))],
+    format_func=lambda x: f"{x:.3f}"
+)
+
+#if st.button("🚀 Ejecutar Predicción", type="primary"):
+with st.spinner("Entrenando modelo..."):
+    results1, figures1 = run(model_type="mlp", alpha=alpha, noise_level=noise_level, use_cache=use_cache)
+    
+    if results1:
+        st.success("✅ Modelo entrenado exitosamente!")
+        
+        # Métricas principales
+        col0, col1, col2, col3, col4, col5 = st.columns(6)
+
+        with col0:
+            st.metric("*Nivel de Confianza:**", f"{(1 - alpha):.3f}")
+        
+        with col1:
+            st.metric("Accuracy", f"{results1['accuracy']:.4f}")
+        
+        with col2:
+            st.metric("Threshold (q)", f"{results1['threshold']:.4f}")
+        
+        with col3:
+            st.metric("Umbral (1-q)", f"{1 - results1['threshold']:.4f}")
+        
+        with col4:
+            st.metric("Modo", results1['cache_status'])
+        
+        with col5:
+            modelo_status = "✅ Entrenado" if results1['model_trained'] else "🔄 Entrenando..."
+            st.metric("Modelo", modelo_status)
+
+        
+        # Siempre mostrar el gráfico
+        if fig := figures1.get_figure("predictions"):
+            st.pyplot(fig)
+    
+    else:
+        st.error("❌ Error en la ejecución")
+
+
+st.markdown(
+    """
+    Bien, se puede jugar con la simulación para ganar intuición, se aumentamos el ruido en las muestras
+    los sets, las predicciones se vuelven menos precisas, esto hace que los scores sean mas grandes.
+    Si los scores crecen, entonces van a haber menos muestras que cumplan con la condición 
+    $1 - \hat{f}(X_i)_{Y_i} = S \leq q$, 
+    lo que hace que los conjuntos sean mas pequeños.
     """
 )
