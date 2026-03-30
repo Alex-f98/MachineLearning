@@ -6,6 +6,7 @@ st.markdown("""
 * [Funciones](#funciones)
 * [Objetos](#objetos)
 * [Polimorfismo y herencia](#polimorfismo-y-herencia)
+* [Ejemplo: Scalers](#ejemplo-normalizacion-scaler)
 ---
 """, unsafe_allow_html=True)
 

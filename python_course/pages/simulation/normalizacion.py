@@ -29,12 +29,12 @@ X, y, fig_data, fig_3d, fig_2d = run_experiment()
 st.markdown("""
 Indice:
 
-* [Normalizacion](#Normalizacion)
-* [Intuición](#Intuición)
+* [Normalización](#normalizacion)
+* [Intuición](#intuicion)
 ---
 """, unsafe_allow_html=True)
 
-st.markdown("### Normalización")
+st.markdown("### Normalizacion")
 st.markdown(
     """
     La normalización es una de las transformaciones más críticas que se deben aplicar a los datos antes de alimentarlos a un algoritmo de aprendizaje automático. 
@@ -85,7 +85,7 @@ st.markdown(
     """
 )
 
-st.markdown("### Intuición")
+st.markdown("### Intuicion")
 st.markdown(
     """
     Bien, pero qué sucede paso a paso al normalizar? Tomemos un set de datos simple el cual decidimos normalizar.
