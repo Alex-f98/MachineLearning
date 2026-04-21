@@ -22,7 +22,7 @@ ml_viz                      = st.Page(f"{path_simulation}/ml_viz.py", title="Vis
 Normalizacion               = st.Page(f"{path_simulation}/normalizacion.py", title="Normalización")
 
 #Conformal prediction.
-#cp_intro                    = st.Page("python_course/pages/cp/intro_cp.py", title="Introducción")
+cp_intro                    = st.Page("python_course/pages/cp/intro_cp.py", title="Introducción")
 
 # Agrupar en secciones (nivel 1: sección, nivel 2: páginas)
 pages = {
@@ -35,8 +35,8 @@ pages = {
     "Simulaciones"  : [grad_desc, 
                        regularization_reg, 
                        ml_viz,
-                       Normalizacion]#,
-    #"Conformal Predictión" : [cp_intro]
+                       Normalizacion],
+    "Conformal Predictión" : [cp_intro]
 }
 
 

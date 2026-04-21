@@ -1,6 +1,13 @@
 import streamlit as st
 from python_course.code.cp_examples import run
 import numpy as np
+from python_course.code.cp_examples import StreamlitCache
+
+
+cache = StreamlitCache()
+PATH_IMAGES = "python_course/image/cp_img/"
+
+
 
 st.markdown("""
 Indice:
@@ -14,20 +21,28 @@ Indice:
 st.markdown("### Introducción")
 st.markdown(
     """
-    La **predicción conforme** (conformal prediction, también conocida como inferencia conforme) es un paradigma fácil de usar para crear conjuntos 
-    o intervalos de incertidumbre estadísticamente rigurosos para las predicciones de dichos modelos.
+    **Que es la predicción conforme?**
 
+    La Prediccion conforme (o inferencia conforme) es un paradigma que utiliza la experiencia pasada para determinar niveles precisos de confianza en las predicciones futuras. este no no produce una predicción
+    puntual $\\hat{y}$ sino que produce una region de predicción (un cojunto o un intervalo) estadísticamente rigurosos.
+    
     De manera crucial, estos conjuntos son válidos en un sentido libre de distribución:
     poseen *garantías explícitas* y no asintóticas incluso sin asumir una distribución de los datos **ni supuestos sobre el modelo**. 
 
-    Es posible utilizar predicción conforme con cualquier modelo previamente entrenado, como una red neuronal, para producir conjuntos 
+    Es posible utilizar predicción conforme con cualquier modelo previamente entrenado (una black box), como una red neuronal, para producir conjuntos 
     que garanticen contener el valor real con una probabilidad especificada por el usuario, por ejemplo, del 90 %
+
+    La prediccion conforme (**CP**) proporciona una covertura marginal, asegurando que la probabilidad de que la etiqueta verdadera y esté contenida en la región de predcción
+    es de al menos $1 - \\alpha$, donde $\\alpha$ es el nivel de error elegido por el usuario. 
+    
+    > El término "marginal" significa que la probabilidad se calcula promediando (marginalizando) sobre toda la aleatoriedad inherente al proceso, lo que incluye tanto la elección de los datos del conjunto de calibración como la del nuevo punto de prueba, en la práctica, esto implica que si aplicas el método a una secuencia larga de predicciones nuevas, la frecuencia de aciertos a largo plazo será aproximadamente $1- \\alpha$ o superior.
     """
 )
+
 st.image(
-    "python_course/image/cp_img/cp_clf_reg.png",
+    PATH_IMAGES + "cp_clf_reg.png",
     caption="Flujo de la predicción conforme, a izquierda se muestra el caso de clasificación y a la derecha el caso de regresión",
-    use_container_width=True
+    width="stretch"
 )
 st.info(
     """
@@ -229,34 +244,35 @@ noise_level = st.slider(
     format="%.1f"
 )
 
-# Checkbox para modo caché
-use_cache = st.checkbox(
-    "🔒 Usar datos de referencia (cache)",
-    help="Activa para usar siempre las mismas imágenes y poder comparar efectos de α y ruido consistentemente"
-)
+
 
 # Botón para limpiar caché (solo si está activo)
-if use_cache:
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("🗑️ Limpiar Caché", help="Reinicia los índices cacheados"):
-            from python_course.code.cp_examples import cache_manager
-            cache_manager.clear_cache()
-            st.success("✅ Caché limpiado - Se seleccionarán nuevas imágenes")
-            st.rerun()
+
+col1, col2 = st.columns([3, 1])
+with col1:
+    # Checkbox para modo caché
+    use_cache = st.checkbox(
+        "🔒 Usar datos de referencia (cache)",
+        help="Activa para usar siempre las mismas imágenes y poder comparar efectos de α y ruido consistentemente"
+    )
+    cache.activate = use_cache
+with col2:
+    if st.button("🗑️ Limpiar Caché", help="Reinicia los índices cacheados"):
+        cache.clear()
+        st.success("✅ Caché limpiado - Se seleccionarán nuevas imágenes")
+        st.rerun()
 
 # Mostrar información del caché si está activo
 if use_cache:
-    from python_course.code.cp_examples import cache_manager
-    if cache_manager.is_cached:
-        st.info(f"🔒 **Modo Cache Activado** - Índices guardados: {cache_manager.get_visualization_indices()}")
+    if cache.keys():
+        st.info(f"🔒 **Modo Cache Activado** - Índices guardados: {cache.get('indices')}")
     else:
         st.info("🔒 **Modo Cache Activado** - Se guardarán los índices de la primera visualización")
 else:
     st.info("🔄 **Modo Dinámico** - Se generarán nuevos datos aleatorios en cada ejecución")
 
 st.markdown("""
-## 📊 Ajusta el nivel de confianza (α)
+## Ajusta el nivel de confianza (α)
 ##  $1 - \hat{f}(X_i)_{Y_i} = S \leq q$ entonces $\hat{f}(X_i)_{Y_i} \geq 1-q$
 """)
 
@@ -271,7 +287,7 @@ alpha = st.select_slider(
 
 #if st.button("🚀 Ejecutar Predicción", type="primary"):
 with st.spinner("Entrenando modelo..."):
-    results1, figures1 = run(model_type="mlp", alpha=alpha, noise_level=noise_level, use_cache=use_cache)
+    results1, figures1 = run(model_type="mlp", alpha=alpha, noise_level=noise_level, cache=cache)
     
     if results1:
         st.success("✅ Modelo entrenado exitosamente!")
@@ -309,10 +325,93 @@ with st.spinner("Entrenando modelo..."):
 
 st.markdown(
     """
-    Bien, se puede jugar con la simulación para ganar intuición, se aumentamos el ruido en las muestras
-    los sets, las predicciones se vuelven menos precisas, esto hace que los scores sean mas grandes.
-    Si los scores crecen, entonces van a haber menos muestras que cumplan con la condición 
-    $1 - \hat{f}(X_i)_{Y_i} = S \leq q$, 
-    lo que hace que los conjuntos sean mas pequeños.
+    Bien, se puede jugar con la simulación para ganar intuición:
+    - Si aumentamos el ruido en las muestras(muestras mas dificiles) desde luego que las predicciones del modelo se vuelve menos precisas (esto depende de la robustes del modelo por detrás).
+    - Si el modelo es menos preciso, se traduce en scores mas altos, esto hace que el treshold *q* tambien crezca.
+    - Si los scores crecen, **q** tambien, luego $1 - \hat{f}(X_i)_{Y_i} = S \leq q$ resultará en conjuntos de predicción
+    mas grandes.
+    - Al aumentar $\\alpha$ el umbral (1-q) aumenta, pudiendo disminuir las clases presentes en $C$.
+    - Por lo anterior, aumentar el nivel de confianza (disminuir alpha) puede hacer que el conjunto de predicciones sea mas grande debido a que crece el umbral **q**.
     """
 )
+
+st.markdown("## Unas imagenes dicen mas que mil palabras")
+
+st.markdown(
+    """
+    **Algunas definiciones**
+
+    - **Nivel de significancia (α):** Es la tasa de error que el usuario está dispuesto a aceptar (ej: 0.05 para un 95\% de confianza).
+
+    - **Puntuación (Score) de no conformidad:** Es una función real que mide qué tan "inusual" o "diferente" se ve un nuevo ejemplo $X_{test}$ respecto a un conjunto de datos previos $X_{cal}$.
+    Un score alto indica que el modelo está muy inseguro o que el dato es atípico.
+
+    - **Intercambiabilidad (Exchangeability):** Es el único supuesto estadistico necesario. Indica que el orden de los datos no altera su distribución conjunta lo que permite que los 
+    errores en el conjunto de calibración sean representativos de los errores futuros (Tambien se suele usar el supuesto de IID que es mas restrictivo).
+
+    - **Validez vs eficacia:** La validez es la garantia de que el modelo acertará en el porcentaje prometido. La **eficacia** se refiere a que la región de predicción sea pequeña e informativa;
+    esto ultimo en principio depende de la calidad del modelo base utilizado.
+
+
+    Sigamos con las explicaciones...
+
+    En la siguiente imagen se tomaron 150 muestras de calibración y se calcularon sus respectivos scores a fin de calcular el umbral $\\hat{q}$.
+
+
+    ```python
+    alpha = 0.04
+
+    n = len(X_calib_mnist)
+    q_val = np.ceil((1 - alpha) * (n + 1)) / n
+    # q_val = 0.966
+
+    #Tomar el score tal que al menos el 96% de los scores están por debajo
+    q_hat = np.quantile(scores, q_val, method="higher")
+    # q_hat = 0.784
+
+    ```
+
+    vemos que primero se decide el $\\alpha$, 
+    luego se calcula el porcentaje (*q_val*)el cual indica el cuantil para **CP**, 
+    con esos datos internamente se calcula el umbral **q** usando la funcion `np.quantile`.
+
+    Internamente, dicha funcion toma los scores suministrados y los ordena.
+    por otro lado calcula el indice del percentil dado q_val y el largo de los scores, con ello obtiene un score en dicho indice.
+    
+    Este score es el umbral **$\\hat{q}$**.
+    > El argumento `higher` indica que si el indice no es un entero, se toma el valor superior de esta forma me aseguro la covertura de al menos $1-\\alpha$.
+    
+    
+    """
+)
+
+
+
+st.image(
+    PATH_IMAGES + "quantile_into.png",
+    caption="Dentro de la funcion quantile, se puede ver como se calcula el umbral q",
+    width="stretch"
+)
+
+st.markdown(
+    """
+    En la siguiente imagen se puede ver la forma mas intuitiva de calcular el umbral $\\hat{q}$: que es tomando el histograma de los
+    scores, luego ir acumulando la suma hasta cubrir la probabilidad $1-\\alpha$ en ese punto se toma el valor del score alcanzado como el umbral $\\hat{q}$.
+    
+    > Este umbral calculado es meramente para intuición, cuanto mas grande sea el conjunto de calibración mejor.
+    """
+)
+
+st.image(
+    PATH_IMAGES + "histogram2_quantile.png",
+    caption="Histograma de los escores, se calcula el percentil q para obtener el umbral",
+    width="stretch"
+)
+
+st.markdown(
+    """
+    Una vez calculado el umbral $\\hat{q}$, se puede usar para predecir regiones de nuevos datos.
+    """
+)
+
+

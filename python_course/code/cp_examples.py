@@ -8,65 +8,36 @@ import matplotlib.pyplot as plt
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 import torch
+import streamlit as st
 
-# Sistema de caché para consistencia de índices de visualización
-class CacheManager:
-    """
-    Gestiona el caché de índices de visualización para comparaciones consistentes
-    """
+class StreamlitCache:
+    """Cache que persiste entre ejecuciones usando st.session_state"""
+    
     def __init__(self):
-        self.visual_indices = []      # Índices de las 3 imágenes mostradas inicialmente
-        self.is_cached = False        # Estado del caché
-        self.model_trained = False    # Estado del entrenamiento del modelo
-        self.cached_model = None      # Modelo cacheado
-        
-    def cache_visualization_indices(self, indices: List[int]):
-        """
-        Guarda los índices de la primera visualización
-        
-        Args:
-            indices: Lista de índices de las imágenes mostradas
-        """
-        self.visual_indices = indices.copy()
-        self.is_cached = True
-        print(f"🔒 Índices de visualización cacheados: {self.visual_indices}")
+        if 'streamlit_cache' not in st.session_state:
+            st.session_state.streamlit_cache = {}
     
-    def get_visualization_indices(self) -> List[int]:
-        """
-        Obtiene los índices cacheados o devuelve vacío si no hay caché
-        
-        Returns:
-            Lista de índices cacheados o lista vacía
-        """
-        return self.visual_indices.copy() if self.is_cached else []
+    @property
+    def _cache(self):
+        return st.session_state.streamlit_cache
     
-    def clear_cache(self):
-        """Limpia el caché de índices"""
-        self.visual_indices = []
-        self.is_cached = False
-        print("🗑️ Caché de visualización limpiado")
+    def set(self, key: str, value: Any) -> None:
+        self._cache[key] = value
+        print(f"✅ Cacheado: {key}")
     
-    def set_model_trained(self, trained: bool = True):
-        """Marca si el modelo ya fue entrenado"""
-        self.model_trained = trained
-        if trained:
-            print("✅ Modelo marcado como entrenado")
+    def get(self, key: str, default: Any = None) -> Any:
+        return self._cache.get(key, default)
     
-    def is_model_trained(self) -> bool:
-        """Verifica si el modelo ya fue entrenado"""
-        return self.model_trained
+    def has(self, key: str) -> bool:
+        return key in self._cache
     
-    def set_cached_model(self, model):
-        """Guarda el modelo entrenado"""
-        self.cached_model = model
-        print("✅ Modelo cacheado")
+    def keys(self) -> List[str]:
+        return list(self._cache.keys())
     
-    def get_cached_model(self):
-        """Obtiene el modelo cacheado"""
-        return self.cached_model
+    def clear(self):
+        self._cache.clear()
+        print("🧹 Caché limpiado")
 
-# Instancia global del caché
-cache_manager = CacheManager()
 
 
 # Importaciones del paquete cp_models (asumiendo que están disponibles)
@@ -85,11 +56,11 @@ except ImportError as e:
 @dataclass
 class PredictionResults:
     """Contenedor para los resultados de la predicción conformal"""
-    accuracy: float
-    predictions: Any
-    prediction_sets: Any
-    probabilities: Any
-    scores: Any #para el caso de clasificacion seran las "1 - probabilidades"
+    accuracy:            float
+    predictions:         int | float             #float o enteros
+    prediction_sets:     list[int] | list[float] #lista de enteros o floats
+    probabilities:       float
+    scores:              float                   #para el caso de clasificacion seran las "1 - probabilidades"
     multi_class_indices: Dict[int, Any]
 
 
@@ -99,7 +70,7 @@ class ConformalPredictionDemo:
     Encapsula toda la lógica de carga de datos, entrenamiento y visualización
     """
     
-    def __init__(self, alpha: float = 0.05, model_type: str = "mlp", epochs: int = 1):
+    def __init__(self, model_type: str = "mlp", problem: str = "clf", epochs: int = 1):
         """
         Inicializa la demostración
         
@@ -108,12 +79,12 @@ class ConformalPredictionDemo:
             model_type: Tipo de modelo ('mlp' o 'cnn')
             epochs: Número de épocas de entrenamiento
         """
-        self.alpha       = alpha
+        self.alpha       = None
         self.model_type  = model_type
+        self.problem     = problem
         self.epochs      = epochs
-        self.model = None
-        self.create_model()
-        self.cp_classifier = SplitConformalClassifier(self.model, alpha=self.alpha)
+        self.model       = None
+        self.cp_model    = None #cls/reg.
         self.data        = None
         
     def load_and_process_data(self, source: str = "mnist", size_calib: int = 50, noise_level: float = 0.0) -> bool:
@@ -164,7 +135,6 @@ class ConformalPredictionDemo:
                 'X_cal': X_cal,
                 'y_cal': y_cal
             }
-            
             print(f"Datos cargados - Train: {X_train.shape}, Test: {X_test.shape}, Cal: {X_cal.shape}")
             if noise_level > 0:
                 print(f"🔊 Ruido aplicado con nivel {noise_level:.2f}")
@@ -200,6 +170,12 @@ class ConformalPredictionDemo:
         except Exception as e:
             print(f"Error creando modelo: {e}")
             return False
+
+    def get_model(self):
+        return self.model
+
+    def set_model(self, model):
+        self.model = model
     
     def train_model(self) -> bool:
         """
@@ -208,24 +184,18 @@ class ConformalPredictionDemo:
         Returns:
             bool: True si el entrenamiento fue exitoso
         """
+        if self.problem == "clf":
+            self.cp_model= SplitConformalClassifier(self.get_model())
+        elif self.problem == "reg":
+            self.cp_model= SplitConformalRegressor(self.get_model())
+
         try:
-            if self.model is None or self.data is None:
-                raise ValueError("Modelo o datos no inicializados")
-            
-            # Verificar si el modelo ya fue entrenado
-            if cache_manager.is_model_trained():
-                print("🔄 Modelo ya entrenado - omitiendo entrenamiento")
-                self.model = cache_manager.get_cached_model()
-                self.cp_classifier = SplitConformalClassifier(self.model, self.alpha)
-                return True
+            if self.get_model() is None or self.data is None:
+                raise ValueError(f"Modelo o datos no inicializados: \n model: {self.get_model()}\n data: {self.data}")
             
             print("🚀 Entrenando modelo base...")
             # Entrenar el modelo (sin epochs en fit())
-            self.cp_classifier.fit(self.data['X_train'], self.data['y_train'])
-            
-            # Marcar como entrenado
-            cache_manager.set_model_trained(True)
-            cache_manager.set_cached_model(self.model)
+            self.cp_model.fit(self.data['X_train'], self.data['y_train'])
             print(f"✅ Modelo entrenado")
             return True
             
@@ -233,7 +203,7 @@ class ConformalPredictionDemo:
             print(f"Error entrenando modelo: {e}")
             return False
     
-    def calibrate(self) -> bool:
+    def calibrate(self, alpha_=None) -> bool:
         """
         Calibra el clasificador conformal (se puede ejecutar múltiples veces)
         
@@ -244,17 +214,16 @@ class ConformalPredictionDemo:
             if SplitConformalClassifier is None:
                 raise ImportError("SplitConformalClassifier no está disponible")
                 
-            if self.model is None or self.data is None:
-                raise ValueError("Modelo o datos no inicializados")
-            
-            # Crear nuevo clasificador conformal con el alpha actual
-            self.cp_classifier = SplitConformalClassifier(self.model, alpha=self.alpha)
-            
+            if self.model is None or self.data is None or self.cp_model is None:
+                raise ValueError(f"Modelo, datos o modelo conformal no inicializados: \n model: {self.model}\n data: {self.data}\n cp_model: {self.cp_model}")
+
             # Entrenar y calibrar
-            print(f"🎯 Calibrando clasificador conformal con alpha={self.alpha}")
-            self.train_model()
-       
-            self.cp_classifier.calibrate(self.data['X_cal'], self.data['y_cal'])
+            print(f"🎯 Calibrando clasificador conformal con alpha={alpha_}")
+
+            if alpha_ is None:
+                raise ValueError("Alpha no indicado")
+            self.alpha = alpha_
+            self.cp_model.calibrate(self.data['X_cal'], self.data['y_cal'], alpha=self.alpha)
             
             print(f"✅ Clasificador conformal calibrado")
             return True
@@ -263,7 +232,7 @@ class ConformalPredictionDemo:
             print(f"Error calibrando clasificador conformal: {e}")
             return False
 
-    def evaluate_model(self, use_cache: bool = False) -> Optional[PredictionResults]:
+    def evaluate_model(self) -> Optional[PredictionResults]:
         """
         Evalúa el modelo y genera predicciones conformales
         
@@ -274,20 +243,20 @@ class ConformalPredictionDemo:
             PredictionResults con todos los resultados
         """
         try:
-            if self.model is None or self.data is None or self.cp_classifier is None:
-                raise ValueError("Modelo, datos o clasificador conformal no inicializados")
+            if self.model is None or self.data is None or self.cp_model is None:
+                raise ValueError(f"Modelo, datos o clasificador conformal no inicializados: \n model: {self.model}\n data: {self.data}\n cp_model: {self.cp_model}")
             
             # Predicciones del modelo
             y_pred = self.model.predict(self.data['X_test'])
             accuracy = (y_pred == self.data['y_test']).float().mean().item()
             
             # Predicciones conjuntos y probabilidades
-            pred_sets = self.cp_classifier.predict_set(self.data['X_test'])
-            probabilidades = self.cp_classifier.predict_proba(self.data['X_test'])
-            scores = 1 - probabilidades
+            pred_sets      = self.cp_model.predict_set(self.data['X_test'])
+            probabilidades = self.cp_model.predict_proba(self.data['X_test'])
+            scores         = 1 - probabilidades
             
             # Encontrar casos con múltiples clases (usando caché si corresponde)
-            multi_class_indices = self._find_multi_class_predictions(scores, use_cache=use_cache)
+            multi_class_indices = self._find_multi_class_predictions(scores)
             
             results = PredictionResults(
                 accuracy           = accuracy,
@@ -307,91 +276,44 @@ class ConformalPredictionDemo:
             print(f"Error evaluando modelo: {e}")
             return None
     
-    def _find_multi_class_predictions(self, scores: Any, max_samples: int = 3, use_cache: bool = False) -> Dict[int, Any]:
+    def _find_multi_class_predictions(self, scores: Any, max_samples: int = 3) -> Dict[int, Any]:
         """
         Encuentra predicciones con múltiples clases
         
         Args:
             scores: Scores del modelo
             max_samples: Máximo de muestras a retornar
-            use_cache: Si usar índices cacheados de visualización
             
         Returns:
             Dict con índices y clases válidas
         """
-        threshold = self.cp_classifier.q_hat
+        threshold = self.cp_model.q_hat
         valid_classes = scores <= threshold
-
-        # Si usamos caché y hay índices cacheados, priorizarlos
-        if use_cache:
-            cached_indices = cache_manager.get_visualization_indices()
-            
-            if cached_indices:
-                multi_class_indices = {}
-                
-                # Primero buscar en índices cacheados
-                for i in cached_indices:
-                    if i < len(valid_classes) and valid_classes[i].sum() > 1:
-                        multi_class_indices[i] = valid_classes[i]
-                        if len(multi_class_indices) >= max_samples:
-                            return multi_class_indices
-                
-                # Si no hay suficientes multi-clase en caché, buscar en resto
-                if len(multi_class_indices) < max_samples:
-                    for i, pred_set in enumerate(valid_classes):
-                        if i not in cached_indices and pred_set.sum() > 1:
-                            multi_class_indices[i] = pred_set
-                            if len(multi_class_indices) >= max_samples:
-                                break
-                
-                # Completar con casos normales si aún no hay suficientes
-                if len(multi_class_indices) < max_samples:
-                    # Primero usar índices cacheados que no son multi-clase
-                    for i in cached_indices:
-                        if i < len(valid_classes) and i not in multi_class_indices:
-                            multi_class_indices[i] = valid_classes[i]
-                            if len(multi_class_indices) >= max_samples:
-                                break
-                    
-                    # Si aún falta, usar otros índices
-                    if len(multi_class_indices) < max_samples:
-                        all_indices = set(range(len(valid_classes)))
-                        used_indices = set(multi_class_indices.keys())
-                        remaining_indices = list(all_indices - used_indices)
-                        
-                        needed = max_samples - len(multi_class_indices)
-                        if remaining_indices:
-                            sampled_indices = np.random.choice(remaining_indices, size=needed, replace=False)
-                            for i in sampled_indices:
-                                multi_class_indices[i] = valid_classes[i]
-                
-                return multi_class_indices
-
-        # Comportamiento normal (sin caché)
+        
         multi_class_indices = {}
+        
+        # 1. Buscar casos con múltiples clases
         for i, pred_set in enumerate(valid_classes):
-            if pred_set.sum() > 1:  # Múltiples clases predichas
+            if pred_set.sum() > 1:
                 multi_class_indices[i] = pred_set
                 if len(multi_class_indices) >= max_samples:
-                    break
-
-        # Si no hay suficientes casos multi-clase, agregar casos normales
-        if len(multi_class_indices) < max_samples:
-            all_indices = set(range(len(valid_classes)))
-            multi_class_indices_set = set(multi_class_indices.keys())
-            remaining_indices = list(all_indices - multi_class_indices_set)
+                    return multi_class_indices
+        
+        # 2. Si no hay suficientes multi-clase, completar con casos normales
+        needed = max_samples - len(multi_class_indices)
+        if needed > 0:
+            # Encontrar índices que no son multi-clase
+            normal_indices = [i for i in range(len(valid_classes)) 
+                            if i not in multi_class_indices]
             
-            needed = max_samples - len(multi_class_indices)
-            if remaining_indices:
-                sampled_indices = np.random.choice(remaining_indices, size=needed, replace=False)
-                for i in sampled_indices:
+            # Tomar aleatoriamente los que faltan
+            if normal_indices:
+                selected = np.random.choice(normal_indices, size=needed, replace=False)
+                for i in selected:
                     multi_class_indices[i] = valid_classes[i]
         
-        # Si es la primera ejecución (sin caché), guardar los índices usados
-        if not use_cache and multi_class_indices:
-            cache_manager.cache_visualization_indices(list(multi_class_indices.keys()))
-        
         return multi_class_indices
+
     
     def plot_predictions(self, results: PredictionResults, max_samples: int = 3) -> Optional[plt.Figure]:
         """
@@ -429,21 +351,21 @@ class ConformalPredictionDemo:
                 
                 # Scores de clases
                 axes[idx, 1].bar(
-                    range(len(self.cp_classifier.classes_)), 
+                    range(len(self.cp_model.classes_)), 
                     results.probabilities[i], 
                     label="Class probabilities", 
                     color='#90CDF4FF'
                 )
-                axes[idx, 1].set_xticks(range(len(self.cp_classifier.classes_)))
-                axes[idx, 1].set_xticklabels([str(i) for i in self.cp_classifier.classes_])
+                axes[idx, 1].set_xticks(range(len(self.cp_model.classes_)))
+                axes[idx, 1].set_xticklabels([str(i) for i in self.cp_model.classes_])
                 axes[idx, 1].axhline(
-                    y=1 - self.cp_classifier.q_hat, 
+                    y=1 - self.cp_model.q_hat, 
                     label='Umbral (1 - q)', 
                     color="#FC766AFF", 
                     linestyle='dashed'
                 )
                 axes[idx, 1].legend(loc=1)
-                idx_pred = str(list(map(int, self.cp_classifier.classes_[valid_classes])))
+                idx_pred = str(list(map(int, self.cp_model.classes_[valid_classes])))
                 axes[idx, 1].set_title(rf"$C(X_{{test}})$: { {idx_pred} }")
             
             
@@ -484,7 +406,7 @@ class StreamlitFigureManager:
 
 
 def run(model_type: str = "mlp", alpha: float = 0.05, epochs: int = 1, 
-        max_samples: int = 3, noise_level: float = 0.0, use_cache: bool = False) -> Tuple[Optional[Dict[str, Any]], Optional[StreamlitFigureManager]]:
+        max_samples: int = 3, noise_level: float = 0.0, cache: StreamlitCache = None) -> Tuple[Optional[Dict[str, Any]], Optional[StreamlitFigureManager]]:
     """
     Función principal que ejecuta la demostración completa
     
@@ -499,34 +421,71 @@ def run(model_type: str = "mlp", alpha: float = 0.05, epochs: int = 1,
     Returns:
         Tuple: (resultados_dict, figure_manager) para uso con Streamlit
     """
+
+    use_cache = cache.activate if cache is not None else False
+
     # Inicializar gestor de figuras
     figure_manager = StreamlitFigureManager()
     
     # Crear demo
-    demo = ConformalPredictionDemo(alpha=alpha, model_type=model_type, epochs=epochs)
+    demo = ConformalPredictionDemo(model_type=model_type, epochs=epochs)
     
     # 1. Cargar datos (con ruido si corresponde)
     if not demo.load_and_process_data(noise_level=noise_level):
         return None, figure_manager
     
-#    # 2. Crear modelo
-#    if not demo.create_model():
-#        return None, figure_manager
-    
-    # 3. Entrenar modelo (solo la primera vez)
-    if not demo.train_model():
+     # 2. Crear modelo (siempre se crea)
+    if not demo.create_model():
         return None, figure_manager
+
+    # 3. Entrenar modelo
+    if use_cache and cache.has("model"):
+        # Usar modelo cacheado
+        demo.set_model(cache.get("model"))
+        demo.cp_model = cache.get("cp_model")
+        print("Usando modelo cacheado")
+    else:
+        # Entrenar nuevo modelo
+        if not demo.train_model():
+            return None, figure_manager
+        if use_cache:
+            cache.set("model", demo.get_model())
+            cache.set("cp_model", demo.cp_model)
+            print("Modelo cacheado")
     
     # 4. Calibrar clasificador conformal (cada vez que cambia alpha o ruido)
-    if not demo.calibrate():
+    if not demo.calibrate(alpha_=alpha):
         return None, figure_manager
     
     # 5. Evaluar modelo
-    results = demo.evaluate_model(use_cache=use_cache)
+    results = demo.evaluate_model()
     if results is None:
         return None, figure_manager
     
-    # 6. Crear visualización
+    # 6. Manejar índices con/sin cache
+    if use_cache:
+        if cache.has("indices"):
+            # Usar índices cacheados PERO forzar a que aparezcan aunque no sean multi-clase
+            cached_indices = cache.get("indices")
+            new_multi_class = {}
+            
+            # Recalcular predicciones para índices cacheados (más seguro)
+            scores = 1 - demo.cp_model.predict_proba(demo.data['X_test'])
+            threshold = demo.cp_model.q_hat
+            valid_classes = scores <= threshold
+            
+            for i in cached_indices:
+                if i < len(valid_classes):
+                    new_multi_class[i] = valid_classes[i]
+            
+            results.multi_class_indices = new_multi_class
+            print("Usando índices cacheados (predicciones recalcualdas)")
+        else:
+            # Primera vez: guardar índices
+            cache.set("indices", list(results.multi_class_indices.keys()))
+            print("Índices cacheados por primera vez")
+        
+    # 7. Crear visualización
     fig = demo.plot_predictions(results, max_samples=max_samples)
     if fig is not None:
         figure_manager.add_figure("predictions", fig)
@@ -537,12 +496,12 @@ def run(model_type: str = "mlp", alpha: float = 0.05, epochs: int = 1,
         'multi_class_count': len(results.multi_class_indices),
         'alpha': alpha,
         'model_type': model_type,
-        'threshold': 1 - demo.cp_classifier.q_hat if demo.cp_classifier else None,
+        'threshold': 1 - demo.cp_model.q_hat if demo.cp_model else None,
         'noise_level': noise_level,
         'use_cache': use_cache,
         'cache_status': '🔒 Cacheado' if use_cache else '🔄 Dinámico',
-        'model_trained': cache_manager.is_model_trained(),
-        'cached_indices': cache_manager.get_visualization_indices() if use_cache else []
+        'model_trained': cache.has("model"),
+        'cached_indices': cache.get("indices", []) if use_cache and cache.has("indices") else []
     }
     
     return results_dict, figure_manager
