@@ -409,24 +409,26 @@ st.markdown(
 
     Esto tambien se puede ver en el siguiente grafico.
 
-    Vemos que la covertura es ampliamente superadora de la cobertura nominal, lo que indica un comportamiento conservador a costa de
+    """
+)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.image(PATH_IMAGES + "metrics_vi_pinn_cp1D.png", caption="Métricas de CP", width="stretch")
+
+with col2:
+    st.image(PATH_IMAGES + "coverage_vi_pinn_cp1D.png", caption="Cobertura para diferentes valores de alpha", width="stretch")
+
+st.markdown(
+    """
+    Vemos (a izquierda) que la covertura es ampliamente superadora de la cobertura nominal, lo que indica un comportamiento conservador a costa de
     que el sharpness (ancho del intervalo) sea mayor, lo cual disminuye la eficiencia del intervalo.
 
-    """
-)
 
-st.image(PATH_IMAGES + "metrics_vi_pinn_cp1D.png", caption="Métricas de CP", width="stretch")
-
-st.markdown(
-    """
-    Finalmente, se muestra la covertura para diferentes valores de alpha.    
-    """
-)
-st.image(PATH_IMAGES + "coverage_vi_pinn_cp1D.png", caption="Cobertura para diferentes valores de alpha", width="stretch")
-
-st.markdown(
-    """
-    Se puede observar que la cobertura es mayor que la cobertura nominal (curva azul) para todos los valores de alpha, 
+    Se puede observar (a derecha) que la cobertura es mayor que la cobertura nominal (curva azul) para todos los valores de alpha, 
     aunque comparados con lo covertura deseada (curva puenteada negra) este queda por debajo para niveles de confianza pequeños.
+    
+    Finalmente, se muestra la covertura para diferentes valores de alpha.    
     """
 )
