@@ -10,21 +10,33 @@ PATH_IMAGES = "python_course/image/cp_img/"
 
 
 st.markdown("""
-Indice:
+Índice:
 
 * [Introducción](#introduccion)
-* [seccion 2](#section-2)
-* [Bibliografía](#bibliografia)
----
-""", unsafe_allow_html=True)
+* [Fundamentos Teóricos](#fundamentos-teoricos)
+  * [Teorema de cobertura](#teorema-de-cobertura)
+  * [Intuición del método](#intuicion-del-metodo)
+* [Simulación Interactiva](#simulacion-interactiva)
+* [Conceptos Clave](#conceptos-clave)
+  * [Definiciones importantes](#definiciones-importantes)
+  * [Cálculo del umbral](#calculo-del-umbral)
+* [Aplicaciones en Regresión](#aplicaciones-en-regresion)
+  * [Regresión lineal y cuantílica](#regresion-lineal-y-cuantilica)
+  * [Split Conformal Prediction](#split-conformal-prediction)
+  * [Conformal Quantile Regression](#conformal-quantile-regression)
+* [Comparación de Métodos](#comparacion-de-metodos)
+* [Conclusiones](#conclusiones)
+* [Bonus: Forecasting](#bonus-conformal-prediction-para-forecasting)
+
+---""", unsafe_allow_html=True)
 
 st.markdown("### Introducción")
 st.markdown(
     """
-    **Que es la predicción conforme?**
+    **¿Qué es la predicción conforme?**
 
-    La Prediccion conforme (o inferencia conforme) es un paradigma que utiliza la experiencia pasada para determinar niveles precisos de confianza en las predicciones futuras. este no no produce una predicción
-    puntual $\\hat{y}$ sino que produce una region de predicción (un cojunto o un intervalo) estadísticamente rigurosos.
+    La Predicción conforme (o inferencia conforme) es un paradigma que utiliza la experiencia pasada para determinar niveles precisos de confianza en las predicciones futuras. Este no produce una predicción
+    puntual $\hat{y}$ sino que produce una región de predicción (un conjunto o un intervalo) estadísticamente rigurosos.
     
     De manera crucial, estos conjuntos son válidos en un sentido libre de distribución:
     poseen *garantías explícitas* y no asintóticas incluso sin asumir una distribución de los datos **ni supuestos sobre el modelo**. 
@@ -32,7 +44,7 @@ st.markdown(
     Es posible utilizar predicción conforme con cualquier modelo previamente entrenado (una black box), como una red neuronal, para producir conjuntos 
     que garanticen contener el valor real con una probabilidad especificada por el usuario, por ejemplo, del 90 %
 
-    La prediccion conforme (**CP**) proporciona una covertura marginal, asegurando que la probabilidad de que la etiqueta verdadera y esté contenida en la región de predcción
+    La predicción conforme (**CP**) proporciona una cobertura marginal, asegurando que la probabilidad de que la etiqueta verdadera y esté contenida en la región de predicción
     es de al menos $1 - \\alpha$, donde $\\alpha$ es el nivel de error elegido por el usuario. 
     
     > El término "marginal" significa que la probabilidad se calcula promediando (marginalizando) sobre toda la aleatoriedad inherente al proceso, lo que incluye tanto la elección de los datos del conjunto de calibración como la del nuevo punto de prueba, en la práctica, esto implica que si aplicas el método a una secuencia larga de predicciones nuevas, la frecuencia de aciertos a largo plazo será aproximadamente $1- \\alpha$ o superior.
@@ -46,20 +58,20 @@ st.image(
 )
 st.info(
     """
-    Osea que el marco de predicción conforme nos devulve conjuntos (a izquirda de la figura) o intervalos (a derecha) de **predicción
-    con garantias estadisticas rigurosas** sobre cualquier modelo de aprendizaje automático.
+    O sea que el marco de predicción conforme nos devuelve conjuntos (a izquierda de la figura) o intervalos (a derecha) de **predicción
+    con garantías estadísticas rigurosas** sobre cualquier modelo de aprendizaje automático.
     """
 )
 
 st.markdown(
     r"""
-    Los pasos de conformal prediction se puede ver macroscopicamente del a siguiente manera:
+    Los pasos de conformal prediction se pueden ver macroscópicamente de la siguiente manera:
     - Debemos partir de un modelo ya entrenado (o entrenarlo con su respectivo set de entrenamiento)
-    - A partir del modelo se deben obtener predicciones ($\hat{y}_i$) y un score ($s_i \in \mathbb{R}$) por cada muestra de predicha.
-    - Dicho par $(\hat{y}_i, s_i)$ se le conoce como el conjunto de calibracion (se obtuvo con un set de calibración $X_{test}$)
-    - Se debe elejir un valor de significancia $\alpha$ (por ejemplo, 0.1 para 90% de confianza)
-    - Luego se pasa por el algortimo de conformal prediction para generar los intervalos(o conjuntos) de predicción.
-    - Estos intervalos de predicción deben cumplir para un nuevo punto $X_{test}$ con $\mathbf{P}(y_{test} \in \mathcal{C}(X_{t    est})) \geq 1 - \alpha$
+    - A partir del modelo se deben obtener predicciones ($\hat{y}_i$) y un score ($s_i \in \mathbb{R}$) por cada muestra predicha.
+    - Dicho par $(\hat{y}_i, s_i)$ se le conoce como el conjunto de calibración (se obtuvo con un set de calibración $X_{test}$)
+    - Se debe elegir un valor de significancia $\alpha$ (por ejemplo, 0.1 para 90% de confianza)
+    - Luego se pasa por el algoritmo de conformal prediction para generar los intervalos (o conjuntos) de predicción.
+    - Estos intervalos de predicción deben cumplir para un nuevo punto $X_{test}$ con $\mathbf{P}(y_{test} \in \mathcal{C}(X_{test})) \geq 1 - \alpha$
     
     """
 )
@@ -68,11 +80,11 @@ st.markdown("EL flujo es el siguiente:")
 st.info(
     r"""
 
-    1. Identificar la nocion de heuristica o incerteza del modelo previamente entrenado.
-    2. Definir la funcion de puntuaje $s(x,y) \in \mathbf{R}$ tambien llamado funciones de no conformidad (Los puntajes mas grandes define un peor ajuste entre $x$ e $y$).
+    1. Identificar la noción de heurística o incertidumbre del modelo previamente entrenado.
+    2. Definir la función de puntuación $s(x,y) \in \mathbf{R}$ también llamado funciones de no conformidad (Los puntajes más grandes definen un peor ajuste entre $x$ e $y$).
         - $s(x,y)$ pequeño → buen ajuste/compatibilidad.
         - $s(x,y)$ grande → mal ajuste/compatibilidad.
-    3. Computa $\hat{q}$ como el $⌈(n+1)(1−α)⌉$-th quantile de la calibracion $s_1 = s(X_1, Y_1), ..., s_n = s(X_n, Y_n)$.
+    3. Computa $\hat{q}$ como el $⌈(n+1)(1−α)⌉$-th quantile de la calibración $s_1 = s(X_1, Y_1), ..., s_n = s(X_n, Y_n)$.
 
         En otras palabras, se calcula un umbral calibrado a partir de los datos de calibración:
 
@@ -87,7 +99,10 @@ st.info(
 
     """
 )
-#Quiero  que si le doy click a la seccion se despliege el texto oculto
+st.markdown("## Fundamentos Teóricos")
+
+### Teorema de cobertura
+
 with st.expander("**Teorema D.1 (Garantía de cobertura de la calibración conforme).**"):
     st.markdown(
         r"""
@@ -199,9 +214,8 @@ with st.expander("**Teorema D.1 (Garantía de cobertura de la calibración confo
 
 
 st.markdown(
-
     r"""
-     ## Intuición del texto
+     ## Intuición del método
 
     - Si el score $s(x,y)$ refleja bien la “dificultad” del modelo:
 
@@ -326,16 +340,18 @@ with st.spinner("Entrenando modelo..."):
 st.markdown(
     """
     Bien, se puede jugar con la simulación para ganar intuición:
-    - Si aumentamos el ruido en las muestras(muestras mas dificiles) desde luego que las predicciones del modelo se vuelve menos precisas (esto depende de la robustes del modelo por detrás).
-    - Si el modelo es menos preciso, se traduce en scores mas altos, esto hace que el treshold *q* tambien crezca.
-    - Si los scores crecen, **q** tambien, luego $1 - \hat{f}(X_i)_{Y_i} = S \leq q$ resultará en conjuntos de predicción
-    mas grandes.
+    - Si aumentamos el ruido en las muestras (muestras más difíciles) desde luego que las predicciones del modelo se vuelven menos precisas (esto depende de la robustez del modelo por detrás).
+    - Si el modelo es menos preciso, se traduce en scores más altos, esto hace que el threshold *q* también crezca.
+    - Si los scores crecen, **q** también, luego $1 - \hat{f}(X_i)_{Y_i} = S \leq q$ resultará en conjuntos de predicción
+    más grandes.
     - Al aumentar $\\alpha$ el umbral (1-q) aumenta, pudiendo disminuir las clases presentes en $C$.
-    - Por lo anterior, aumentar el nivel de confianza (disminuir alpha) puede hacer que el conjunto de predicciones sea mas grande debido a que crece el umbral **q**.
+    - Por lo anterior, aumentar el nivel de confianza (disminuir alpha) puede hacer que el conjunto de predicción sea más grande debido a que crece el umbral **q**.
     """
 )
 
-st.markdown("## Unas imagenes dicen mas que mil palabras")
+st.markdown("## Conceptos Clave")
+
+st.markdown("### Definiciones importantes")
 
 st.markdown(
     """
@@ -346,16 +362,20 @@ st.markdown(
     - **Puntuación (Score) de no conformidad:** Es una función real que mide qué tan "inusual" o "diferente" se ve un nuevo ejemplo $X_{test}$ respecto a un conjunto de datos previos $X_{cal}$.
     Un score alto indica que el modelo está muy inseguro o que el dato es atípico.
 
-    - **Intercambiabilidad (Exchangeability):** Es el único supuesto estadistico necesario. Indica que el orden de los datos no altera su distribución conjunta lo que permite que los 
-    errores en el conjunto de calibración sean representativos de los errores futuros (Tambien se suele usar el supuesto de IID que es mas restrictivo).
+    - **Intercambiabilidad (Exchangeability):** Es el único supuesto estadístico necesario. Indica que el orden de los datos no altera su distribución conjunta lo que permite que los 
+    errores en el conjunto de calibración sean representativos de los errores futuros (También se suele usar el supuesto de IID que es más restrictivo).
 
-    - **Validez vs eficacia:** La validez es la garantia de que el modelo acertará en el porcentaje prometido. La **eficacia** se refiere a que la región de predicción sea pequeña e informativa;
-    esto ultimo en principio depende de la calidad del modelo base utilizado.
+    - **Validez vs eficacia:** La validez es la garantía de que el modelo acertará en el porcentaje prometido. La **eficacia** se refiere a que la región de predicción sea pequeña e informativa;
+    esto último en principio depende de la calidad del modelo base utilizado.
 
+    """
+)
 
-    Sigamos con las explicaciones...
+st.markdown("### Cálculo del umbral")
 
-    En la siguiente imagen se tomaron 150 muestras de calibración y se calcularon sus respectivos scores a fin de calcular el umbral $\\hat{q}$.
+st.markdown(
+    """
+    En la siguiente imagen se tomaron 150 muestras de calibración y se calcularán sus respectivos scores a fin de calcular el umbral $\\hat{q}$.
 
 
     ```python
@@ -365,7 +385,7 @@ st.markdown(
     q_val = np.ceil((1 - alpha) * (n + 1)) / n
     # q_val = 0.966
 
-    #Tomar el score tal que al menos el 96% de los scores están por debajo
+    # Tomar el score tal que al menos el 96% de los scores están por debajo
     q_hat = np.quantile(scores, q_val, method="higher")
     # q_hat = 0.784
 
@@ -404,7 +424,7 @@ st.markdown(
 
 st.image(
     PATH_IMAGES + "histogram2_quantile.png",
-    caption="Histograma de los escores, se calcula el percentil q para obtener el umbral",
+    caption="Histograma de los scores, se calcula el percentil q para obtener el umbral",
     width="stretch"
 )
 
@@ -414,4 +434,263 @@ st.markdown(
     """
 )
 
+st.markdown("## Aplicaciones en Regresión")
 
+st.markdown("### Regresión lineal y cuantílica")    
+st.markdown(
+    """
+    En regresión, el objetivo es predecir un valor **continuo** en lugar de una **clase**. 
+    La idea de CP se puede extender a regresión de manera natural definiendo una noción de score de no conformidad.
+    
+    Se puede empezar con lo más simple, definiendo cuáles van a ser los datos de entrenamiento y testeo y obteniendo la recta de regresión lineal
+    """
+)
+col1, col2 = st.columns(2)
+
+with col1:
+    st.image(PATH_IMAGES + "ols.png", caption="Regresión lineal", width="stretch")
+
+with col2:
+    st.image(PATH_IMAGES + "qr_test.png", caption="Regresión cuantílica", width="stretch")
+
+st.markdown(
+    """
+    En la imagen de izquierda se presenta el conjunto de datos de entrenamiento y el de testeo con 201 y 132 puntos respectivamente.
+    Los datos son generados de la siguiente forma:
+
+    ```python
+    n = 400
+    X = np.random.uniform(low=0,high=5,size=n)
+    sigma = 1
+
+    ## Heteroscedastic
+    y = np.cos(X) + (1-np.cos(X))*sigma*np.random.normal(size=n)
+    # Luego se dividen los datos en entrenamiento y testeo
+    ```
+    En donde puedes ver que los datos se generan de forma que la varianza aumenta conforme x aumenta esto es para generar datos más realistas y heteroscedásticos.
+    
+    Además, se agregaron puntos outliers en ambos sets.
+
+    A derecha se puede ver cómo se aplica la regresión cuantílica para predecir los intervalos de confianza.
+
+    ## ¿Pero qué es la regresión cuantílica?
+
+    Es similar a OLS, pero la función que minimiza es diferente, en lugar de minimizar la suma de cuadrados, minimiza la pinball loss de los errores.
+
+    $$
+    \\text{Risk}_{\\beta}(f) = \\mathbb{E}\\left[ \\text{pinball}_{\\beta}(Y, f(X)) \\right]
+    $$
+
+    donde $\\beta$ es el nivel del cuantil por ejemplo para este caso dará los niveles de confianza $\\beta/2=0.05$, $1 - \\beta/2 = 0.95$  si $\\beta = 0.1$.
+
+
+
+    Es importante notar que en el cuantil 0.5 este no predice la media de y dado x, sino la mediana.
+
+    > Nota: QR no tiene garantía teórica sobre la cobertura!
+
+    Los resultados se pueden ver en la imagen de la izquierda que nos dan una estimación de los intervalos de confianza para diferentes niveles de confianza.
+
+    metricas:
+
+    | Métrica | Valor |
+    |---------|-------|
+    | Empirical Coverage (%) | 86.363636 |
+    | Theorical Coverage (%) | 90.0 |
+    | Sharpness | 3.826622 |
+    | Winkler Score | 7.527342 |
+    
+    En resumen, la **regresión cuantílica** tiene como principal ventaja que ofrece una visión más completa de la relación entre las variables predictoras 
+    y la variable respuesta, especialmente cuando la distribución condicional no es simétrica o cuando interesa analizar los **extremos (colas)** 
+    de la distribución.
+
+    Sin embargo, presenta algunas **limitaciones**: solo es aplicable a **variables de respuesta continuas**; la **interpretación de los resultados** 
+    puede ser compleja, ya que cada cuantil representa una relación distinta; requiere un **tamaño muestral grande** para obtener estimaciones precisas
+
+    """
+)
+
+st.markdown("### Split Conformal Prediction")
+st.markdown(
+    """
+    Hasta ahora solo presentamos regresión lineal y cuantílica como el caso más simple de prediction intervals.
+    Ahora, queda aplicar conformal prediction a estos métodos para obtener intervalos de confianza más robustos.
+
+    Antes, no olvidar que se tiene que generar un set de calibración para obtener los q_{1-α/2} y q_{α/2}.
+    Para ello se va a tomar un 25% de los datos de entrenamiento para el set de calibración.
+
+    El primero y más intuitivo es el split conformal prediction, lo complicado es obtener esta noción de score que se daba naturalmente en el caso de clasificación.
+
+    Aquí será: 
+
+    $$
+    S(x) = |f(x) - y|
+    $$
+
+    donde $f(x)$ es la predicción del modelo y $y$ es el valor real.
+    
+    y se obtendrán los cuantiles de los errores en el set de calibración para obtener los intervalos de confianza de la siguiente manera:
+
+    $$
+    C(X,y) = \{f(x) - q_{1-\\alpha/2}, f(x) + q_{1-\\alpha/2}\}
+    $$
+
+    los resultados se muestran a continuación:
+    """
+)
+
+
+st.image(
+    PATH_IMAGES + "scp_test.png",
+    caption="Intervalos de confianza obtenidos con split conformal prediction",
+    width="stretch"
+)
+
+st.markdown(
+    """
+    La **predicción conformal con partición (split conformal prediction)** ofrece una **garantía teórica de cobertura**, a diferencia de la regresión cuantílica. No obstante, presenta varias **limitaciones** importantes:
+
+    *   **Dependencia de la partición de los datos**: el desempeño puede variar considerablemente según cómo se dividan los datos en entrenamiento y validación, generando intervalos distintos para diferentes particiones.
+    *   **Supuesto de intercambiabilidad (generalmente i.i.d.)**: requiere que los datos sean intercambiables, lo cual no siempre se cumple en conjuntos con dependencia temporal, espacial u otras estructuras.
+    *   **Uso ineficiente de los datos**: necesita un conjunto de validación separado, reduciendo los datos disponibles para entrenar el modelo, lo que es problemático cuando los datos son escasos o el modelo es complejo.
+    *   **Intervalos no adaptativos al punto de prueba**: los intervalos producidos no se ajustan específicamente a cada punto de test, lo que puede resultar en predicciones menos informativas en contextos heterogéneos.
+
+    Por lo tanto, se necesitan otros métodos que resuelvan estas limitaciones.
+    """
+)
+
+st.markdown("### Conformal Quantile Regression")
+st.markdown(
+    """
+    Si quiero una noción de scores desde la regresión cuantílica, puedo puntuar qué tan separados están mis cuantiles respecto al verdadero valor, y tomar siempre el de mayor distancia para tomar el peor caso.
+
+    $$
+    S(x,y) = \max \{ q_{\\alpha/2} - y, y - q_{1-\\alpha/2} \}
+    $$
+
+    Teniendo en cuenta que este score es una funcion de no conformidad, el cual es cero cuando las predicciones son buenas.
+
+    Esto es un método distinto al SCP debido que provee de una predicción adaptativa a test
+
+    El resultado es el siguiente:
+
+    """
+)
+st.image(
+    PATH_IMAGES + "qcr_test.png",
+    caption="Intervalos de confianza obtenidos con conformal quantile regression",
+    width="stretch"
+)
+
+st.markdown("## Comparación de Métodos")
+st.markdown(
+    """
+    Como se puede ver, los intervalos de confianza obtenidos con conformal quantile regression son mucho más adaptativos a los puntos de test, 
+    ya que se ajustan específicamente a cada punto de test.
+
+    Se puede decir que son intervalos eficientes, heredado del método de QR.
+
+    Las métricas totales son:
+
+    | Method | Empirical coverage (%) | Theoretical coverage (%) | Sharpness | Winkler score |
+    |--------|------------------------|--------------------------|-----------|---------------|
+    | QR     | 86.36                  | 90.0                     | 3.83      | 7.53          |
+    | SCP    | 92.42                  | 90.0                     | 6.11      | 9.93          |
+    | CQR    | 94.70                  | 90.0                     | 4.35      | 7.64          |
+
+    Como se puede ver, el método de CQR es el que tiene mejor sharpness, 
+    lo que significa que los intervalos son más pequeños, pero a su vez tiene una cobertura empírica más baja que el método de SCP.
+
+    Se puede ver mejor las metricas:
+    """
+)
+
+st.image(
+    PATH_IMAGES + "metrics_cp.png",
+    caption="Métricas obtenidas con conformal prediction relativo a regresión cuantílica",
+    width="stretch"
+)
+
+st.markdown(
+    """
+    Se puede concluir que el método de CQR es el que tiene mejor sharpness, 
+    lo que significa que los intervalos son más pequeños, pero a su vez tiene una cobertura empírica más baja que el método de SCP.
+
+    Por otro lado, esto fue analizado para un $\\alpha = 0.1$, pero se puede variar este parámetro para ver cómo afecta a las métricas y en particular me interesa cómo varía la cobertura empírica.
+    """
+)
+st.image(
+    PATH_IMAGES + "coverage_cp.png",
+    caption="Cobertura empírica obtenida con conformal prediction",
+    width="stretch"
+)
+
+st.markdown(
+    """
+    > Nota: [cqr_linear_model.ipynb](https://colab.research.google.com/drive/13CHq9cVOKfEFcR3vlYzZCaTPVwJsdr-O?usp=sharing)
+    > Notebok solo disponible para FIUBENSES (por ahora)
+    """
+)
+
+st.markdown("## Conclusiones")
+
+st.markdown(
+    """
+    **QR** es un modelo de por sí ya eficiente y bastante útil, pero tiene la desventaja de que no da garantías de coberturas marginal teórica, también tiene otra ventaja y es que sus cuantiles intentan tener cobertura condicional.
+
+    Bien, ¿pero qué ventajas supone la garantía de cobertura condicional? Básicamente me da intervalos más eficientes, para ello muchas veces se debe suponer una distribución y esto atenta con CP.
+
+    Por ello CP no tiene garantía de cobertura condicional, aunque sí la garantía marginal, esto hace que los intervalos no sean eficientes y no se adapten a los datos (pero se puede jugar con esto).
+    
+
+    "Sin embargo, dado que la regresión cuantílica base intenta aprender los cuantiles condicionales verdaderos, la versión conformalizada (**CQR**) 
+    hereda este buen comportamiento, proporcionando intervalos que tienen una cobertura "casi condicional" 
+    de forma asintótica, pero manteniendo siempre la garantía marginal exacta para muestras finitas"
+    """
+)
+
+
+st.markdown("## Bonus: Conformal Prediction para Forecasting")
+
+st.markdown(
+    """
+    La idea de CP se puede extender a problemas de forecasting, es decir, predecir valores futuros de una serie temporal.
+
+    En este caso, es simplemente aplicar lo visto en el caso "airline-passengers" el cual predice valores futuros de una serie temporal.
+
+    Para armar los sets de datos, 
+        - Se toma una ventana de 12 observaciones pasadas para predecir el siguiente valor.
+        - Se asume estacionariedad en los datos.
+        - Se asume que ergodicidad.
+        - En este caso no se puede asumir intercambiabilidad, el orden si importa.
+
+    Luego se aplica Conformal Quantile Regression (CQR) para obtener intervalos de predicción.
+    
+    """ 
+)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.image(PATH_IMAGES + "QR_forecasting.png", caption="Regresión cuantílica", width="stretch")
+
+with col2:
+    st.image(PATH_IMAGES + "CQR_forecasting.png", caption="Conformal Quantile Regression", width="stretch")
+
+with col3:
+    st.image(PATH_IMAGES + "coverage_forecasting.png", caption="Cobertura empírica", width="stretch")
+
+st.markdown("""
+> Nota: Este metodo puede que sea Autorregresión Cuantílica (QAR)
+> Notebook: [cqr_forecasting.ipynb](https://colab.research.google.com/drive/11mivutLu5lC8ovXXgRBmQPQ-T9F7VIC1?usp=sharing)
+> Notebok solo disponible para FIUBENSES (por ahora)
+""")
+
+st.markdown("""
+**Referencias:**
+- [A Gentle Introduction to Conformal Prediction and
+Distribution-Free Uncertainty Quantification](https://arxiv.org/pdf/2107.07511)
+- [Conformal Quantile Regression](https://arxiv.org/pdf/1905.03222)
+- [Tutorial on CP](https://claireboyer.github.io/tutorial-conformal-prediction/slides_cp.pdf)
+- [A gentle introduction of conformal time series forecasting](https://arxiv.org/pdf/2511.13608)
+""")
